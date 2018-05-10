@@ -1,0 +1,484 @@
+body::before {
+    background-size: cover;
+    background-attachment: fixed;
+    content: '';
+    will-change: transform;
+    z-index: -1;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    position: fixed;
+}
+@media (max-width: 512px)  and (min-resolution: 1.5dppx),
+       (max-width: 1024px) and (max-resolution: 1.5dppx) {
+  body::before {
+    background-image: url('../../../static/img/bg.jpg');
+  }
+}
+@media (min-width: 513px)  and (max-width: 1024px) and (min-resolution: 1.5dppx),
+       (min-width: 1025px) and (max-width: 2048px) and (max-resolution: 1.5dppx)  {
+  body::before {
+    background-image: url('../../../static/img/bg.jpg');
+  }
+}
+@media (min-width: 1025px) and (min-resolution: 1.5dppx),
+       (min-width: 2049px) and (max-resolution: 1.5dppx) {
+  body::before {
+    background-image: url('../../../static/img/bg.jpg');
+  }
+}
+body .fh-feed {
+  font-family: 'Roboto', 'Helvetica', sans-serif;
+}
+
+.fh-feed .fh-feed__posts {
+  max-width: 900px;
+  padding: 0;
+  display: flex;
+  width: 100%;
+  margin: 0 auto;
+  flex-shrink: 0;
+}
+
+.fh-feed.mdl-layout .mdl-layout__content {
+  padding-top: 230px;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+}
+.fh-feed .mdl-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 200px;
+}
+.fh-feed .mdl-card__title {
+  padding: 16px;
+  flex-grow: 1;
+}
+.fh-feed .mdl-card__media {
+  box-sizing: border-box;
+  background-size: cover;
+  padding: 24px;
+  display: flex;
+  flex-grow: 1;
+  flex-direction: row;
+  align-items: flex-end;
+  cursor: pointer;
+}
+.fh-feed .mdl-card__media a,
+.fh-feed .mdl-card__title a {
+  color: inherit;
+}
+.fh-feed .mdl-card__supporting-text {
+  width: 100%;
+  padding: 16px;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+}
+.fh-feed .mdl-card__supporting-text strong {
+  font-weight: 400;
+}
+.fh-feed .mdl-card__media ~ .mdl-card__supporting-text {
+  min-height: 64px;
+}
+.fh-feed .mdl-card__supporting-text:not(:last-child) {
+  box-sizing: border-box;
+  min-height: 76px;
+}
+.fh-feed:not(.fh-feed--feedpost) .mdl-card__supporting-text ~ .mdl-card__supporting-text {
+  border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.fh-feed .mdl-card__actions:first-child {
+  margin-left: 0;
+}
+.fh-feed .meta {
+  box-sizing: border-box;
+  padding: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  height: auto;
+}
+.fh-feed .meta > .meta__favorites{
+  flex-direction: row;
+  margin: 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.fh-feed .meta > .meta__favorites .material-icons {
+  font-size: 2em;
+  cursor: pointer;
+  margin-left: 12px;
+}
+.fh-feed .mdl-card .meta.meta--fill {
+  justify-content: space-between;
+}
+.fh-feed .meta > *:first-child {
+  margin-right: 16px;
+}
+.fh-feed .meta > * {
+  display: flex;
+  flex-direction: column;
+}
+.fh-feed.is-small-screen .fh-feed__posts > .mdl-card.coffee-pic {
+  order: 0;
+}
+.fh-feed.is-small-screen .fh-feed__posts > .mdl-card.something-else {
+  order: -1;
+}
+.fh-feed .coffee-pic .mdl-card__media {
+  background-image: url('images/coffee.jpg');
+}
+.fh-feed .something-else .mdl-card__media {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.fh-feed .something-else > button {
+  position: absolute;
+  top: 0;
+  right: 28px;
+  transform: translate(0px, -28px);
+}
+.fh-feed .something-else .mdl-card__media {
+  font-size: 13px;
+  font-weight: 500;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+}
+.fh-feed .something-else .mdl-card__media img {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 10px;
+}
+.fh-feed .something-else .mdl-card__supporting-text {
+  background-color: #F5F5F5;
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
+}
+.fh-feed .on-the-road-again .mdl-card__media {
+  background-image: url('images/road.jpg');
+}
+.fh-feed .shopping .mdl-card__media {
+  background-image: url('images/shopping.jpg');
+}
+.fh-feed .fh-feed__posts > .fh-nav {
+  margin: 12px 15px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  font-weight: 500;
+}
+.fh-feed .fh-feed__posts > .fh-nav > .fh-nav__button {
+  color: white;
+  text-decoration: none;
+}
+.fh-feed .fh-feed__posts > .fh-nav .mdl-button {
+  color: rgba(0,0,0,0.54);
+  background-color: white;
+}
+.fh-feed .fh-feed__posts > .fh-nav > .fh-nav__button:first-child .mdl-button {
+  margin-right: 16px;
+}
+.fh-feed .fh-feed__posts > .fh-nav > .fh-nav__button:last-child .mdl-button {
+  margin-left: 16px;
+}
+.fh-feed .mdl-card > a {
+  color: inherit;
+  text-decoration: none;
+  font-weight: inherit;
+}
+.fh-feed .mdl-card h3 {
+  margin: 0;
+}
+.fh-feed .mdl-card h3 a {
+  text-decoration: none;
+}
+.fh-feed--feedpost .custom-header {
+  background-color: transparent;
+}
+.fh-feed--feedpost .fh-feed__posts > .mdl-card .mdl-card__media {
+  background-image: url('images/road_big.jpg');
+  height: 280px;
+}
+.fh-feed--feedpost .comments {
+  background-color: #EEE;
+}
+.fh-feed--feedpost .meta > * {
+  align-items: center;
+}
+.fh-feed--feedpost .meta + .mdl-card__supporting-text {
+  border: 0;
+  display: flex;
+  flex-direction: column;
+}
+.fh-feed--feedpost .meta + .mdl-card__supporting-text p {
+  max-width: 512px;
+  margin: 16px auto;
+  font-size: 16px;
+  line-height: 28px;
+}
+
+.fh-feed--feedpost .comments {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  padding: 32px;
+  box-sizing: border-box;
+}
+.fh-feed--feedpost .comments > form {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 16px;
+}
+.fh-feed--feedpost .comments > form .mdl-textfield {
+  flex-grow: 1;
+  margin-right: 16px;
+  color: rgb(97, 97, 97);
+}
+/* Workaround for Firefox.
+ * User agent stylesheet kept overwriting the font in FF only.
+ */
+.fh-feed--feedpost .comments > form .mdl-textfield .mdl-textfield__input {
+  font-family: 'Roboto', 'Helvetica', sans-serif;
+}
+.fh-feed--feedpost .comments > form .mdl-textfield input,
+.fh-feed--feedpost .comments > form .mdl-textfield textarea {
+  resize: none;
+}
+.fh-feed--feedpost .comments > form button {
+  margin-top: 20px;
+  background-color: rgba(0, 0, 0, 0.24);
+  color: white;
+}
+.fh-feed--feedpost .comments .comment {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.fh-feed--feedpost .comments .comment > .comment__header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.fh-feed--feedpost .comments .comment > .comment__header > .comment__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  margin-right: 16px;
+}
+.fh-feed--feedpost .comments .comment > .comment__header > .comment__author {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+.fh-feed--feedpost .comments .comment > .comment__text {
+  line-height: 1.5em;
+}
+.fh-feed--feedpost .comments .comment > .comment__actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 0.8em;
+  margin-top: 16px;
+}
+.fh-feed--feedpost .comments .comment > .comment__actions button {
+  margin-right: 16px;
+  color: rgba(0, 0, 0, 0.24);
+}
+.fh-feed--feedpost .comments .comment > .comment__answers {
+  padding-top: 32px;
+  padding-left: 48px;
+}
+
+.fh-feed--feedpost .fh-back {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  color: white;
+  z-index: 9999;
+}
+.fh-feed .section-spacer {
+  flex-grow: 1;
+}
+.fh-feed .something-else {
+  overflow: visible;
+  z-index: 10;
+}
+.fh-feed .amazing .mdl-card__title {
+  background-color: #263238;
+}
+.fh-feed .minilogo {
+  width: 44px;
+  height: 44px;
+  background-image: url('images/avatar.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 50%;
+  border-radius: 22px;
+  background-color: #F5F5F5;
+}
+
+/* Fixes for IE 10 */
+.mdl-grid {
+  display: flex !important;
+}
+
+.social-btn {
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  margin: 0 16px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  opacity: 0.46;
+  border-radius: 2px;
+}
+.social-btn__twitter {
+  background-image: url('https://www.gstatic.com/images/icons/material/system/2x/post_twitter_black_24dp.png');
+}
+.social-btn__blogger {
+  background-image: url('https://www.gstatic.com/images/icons/material/system/2x/post_facebook_black_24dp.png');
+}
+.social-btn__gplus {
+  background-image: url('https://www.gstatic.com/images/icons/material/system/2x/post_gplus_black_24dp.png');
+}
+.social-btn__share {
+  color: rgba(0, 0, 0, 0.54);
+  background: transparent;
+}
+
+.fh-feed .mdl-mini-footer {
+  margin-top: 80px;
+  height: 120px;
+  padding: 40px;
+  align-items: center;
+  background-color: white;
+  box-sizing: border-box;
+}
+
+.mdl-textfield--floating-label input[type=password]:-webkit-autofill ~ label {
+  transform: translate3d(0, -20px, 0);
+  visibility: hidden;
+}
+
+.mdl-textfield--floating-label input[type=password]:-webkit-autofill ~ label:after {
+  content: 'Password';
+  visibility: visible;
+  left: 0;
+  transform: translate3d(0, -20px, 0);
+  background: transparent;
+  color: inherit;
+}
+
+.fh-header {
+  overflow: visible;
+  background-color: white;
+}
+
+.fh-header .material-icons {
+  color: #767777 !important;
+}
+
+.fh-header .mdl-layout__drawer-button {
+  background: transparent;
+  color: #767777;
+}
+
+.fh-header .mdl-navigation__link {
+  color: #757575;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.fh-navigation-container {
+  /* Simple hack to make the overflow happen to the left instead... */
+  direction: rtl;
+  order: 1;
+  width: 500px;
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fh-navigation {
+  /* ... and now make sure the content is actually LTR */
+  direction: ltr;
+  justify-content: flex-end;
+  width: 800px;
+}
+
+.fh-navigation .mdl-navigation__link {
+  display: inline-block;
+  height: 60px;
+  line-height: 68px;
+  background-color: transparent !important;
+  border-bottom: 4px solid transparent;
+}
+
+.fh-navigation .mdl-navigation__link:hover {
+  border-bottom: 4px solid #8bc34a;
+}
+
+.fh-drawer {
+  border-right: none;
+}
+
+.fh-drawer-separator {
+  height: 1px;
+  background-color: #dcdcdc;
+  margin: 8px 0;
+}
+
+.fh-drawer .mdl-navigation__link.mdl-navigation__link {
+  font-size: 14px;
+  color: #757575;
+}
+
+.fh-drawer span.mdl-navigation__link.mdl-navigation__link {
+  color: #8bc34a;
+}
+
+.fh-drawer .mdl-layout-title {
+  position: relative;
+  background: #6ab344;
+  height: 160px;
+}
+
+.fh-drawer .fh-logo-image {
+  position: absolute;
+  bottom: 16px;
+}
+
+.fh-more-button {
+  order: 3;
+}
+
+@media (max-width: 900px) {
+  .fh-navigation-container {
+    display: none;
+  }
+
+  .fh-title {
+    display: none !important;
+  }
+
+  .fh-mobile-title {
+    display: block !important;
+    position: absolute;
+    left: calc(50% - 70px);
+    top: 12px;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}

@@ -1,0 +1,36 @@
+{{define "body"}}
+<div class="fh-feed mdl-layout mdl-js-layout has-drawer is-upgraded">
+    <main class="mdl-layout__content">
+        <div class="fh-feed__posts mdl-grid">
+            <div class="mdl-card amazing mdl-cell mdl-cell--12-col">
+                <div class="mdl-card--border">
+                    <form action="/login?redirect={{.Redirect}}" method='post'>                        
+                        
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <input class="mdl-textfield__input" type="text" id="email" required name="email">
+                            <label class="mdl-textfield__label" for="email">Email</label>
+                        </div>
+                        </br>
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <input class="mdl-textfield__input" type="password" id="password" required name="password">
+                            <label class="mdl-textfield__label" for="password">Password</label>
+                        </div>                            
+                        </br>
+                        <input type="hidden" name="redirect" value="{{.Redirect}}">
+                        <input type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effec" value="Login">                            
+                    </form>
+                    <a href='/register'>No Account? Sign Up Here</a> 
+                    {{if .Error}}
+                    </br>
+                    <div class="mdl-card__supporting-text meta mdl-color-text--red-600">                        
+                        <div>
+                            <strong>{{.Error}}</strong>                                    
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{{end}}

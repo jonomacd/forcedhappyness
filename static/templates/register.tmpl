@@ -1,0 +1,37 @@
+{{define "body"}}
+    <div class="fh-feed mdl-layout mdl-js-layout has-drawer is-upgraded">
+        <main class="mdl-layout__content">
+            <div class="fh-feed__posts mdl-grid">
+                <div class="mdl-card amazing mdl-cell mdl-cell--12-col">
+                    <div class="mdl-card--border">
+                        <form action="/register" method='post'>                        
+                            
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                <input class="mdl-textfield__input" type="text" id="name" required name="name">
+                                <label class="mdl-textfield__label" for="name">Name</label>
+                            </div>
+                            </br>
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                <input class="mdl-textfield__input" type="text" id="email" required name="email">
+                                <label class="mdl-textfield__label" for="email">Email</label>
+                            </div>
+                            </br>
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                <input class="mdl-textfield__input" type="password" id="password" required name="password">
+                                <label class="mdl-textfield__label" for="password">Password</label>
+                            </div>                            
+                            </br>
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                <input class="mdl-textfield__input" type="password" id="confirmpassword" required name="confirmpassword">
+                                <label class="mdl-textfield__label" for="confirmpassword">Confirm Password</label>
+                            </div>                            
+                            </br>
+                            
+                            <input type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effec" value="Register">
+                        </form>                
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>    
+{{end}}
