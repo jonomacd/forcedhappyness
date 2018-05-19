@@ -18,8 +18,11 @@
             <a  href="" id='like-{{.Post.ID}}' onclick="return toggleLike({{.Post.ID}})" style='text-decoration: none;' class="material-icons">{{if .HasLiked}}favorite{{else}}favorite_border{{end}}</a>
             <span id='likebadge-{{.Post.ID}}' class="mdl-badge" data-badge="{{.Post.Likes}}"></span>
 
-            <a id='reply-{{.Post.ID}}' href='/reply/{{.Post.ID}}' style='text-decoration: none;' class="material-icons">message</a>
+            <a id='reply-{{.Post.ID}}' href='/post/{{.Post.ID}}#{{.Post.ID}}' style='text-decoration: none;' class="material-icons">message</a>
             <a  href="/post/{{.Post.ID}}#{{.Post.ID}}"><span id='replybadge-{{.Post.ID}}' class="mdl-badge" data-badge="{{.Post.ReplyCount}}"></span></a>
+
+            <a href="" onclick="return toggleDisplay({{.Post.ID}})" style='text-decoration: none;' class="material-icons">reply</a>
+
             {{if .Post.Analysis}}
             {{if .Post.Analysis.DocumentSentiment}}
             <div style="margin: 10px;">
@@ -28,11 +31,53 @@
             {{end}}
             {{end}}
         </div>
-    </div>   
+    </div>  
+    <div id="{{.Post.ID}}-reply" class="mdl-card mdl-cell mdl-cell--12-col post-reply">                 
+        {{block "submitform" .Post}}{{end}}        
+    </div>
 {{end}}
 
 {{define "postScript"}}
     <script>
+
+    function pagePosts(cursor) {
+        fetch('/post/page?loc='+window.location.pathname+'&cursor='+cursor, {
+        method: 'get',
+        credentials: 'include',            
+        })
+        .then(function (response) {
+            if (response.status == 200) {
+                response.text().then(function(data) {
+                    // Get rid of last more button
+                    var element = document.getElementById(cursor);
+                    element.parentNode.removeChild(element);
+                    
+                    var temp = document.createElement('div');
+                    temp.innerHTML = data;
+                    temp.style.width = '100%';
+                    var elm = document.getElementById('post-div')
+                    elm.appendChild(temp);
+                });
+            }
+        })
+        .catch(function (error) {
+            var snackbarContainer = document.querySelector('#error-snackbar');
+            var data = {message: 'Error getting next page'};
+            snackbarContainer.MaterialSnackbar.showSnackbar(data);
+        });
+        return false
+    }
+
+    function toggleDisplay(postID) {
+        var elm = document.getElementById(postID+'-reply')
+        if (elm.style.display  == 'none' || elm.style.display  == '') {
+            elm.style.display = 'inline';
+        } else {
+            elm.style.display = 'none'
+        }
+        return false
+    }
+
     function toggleLike(postID){
         fetch('/like', {
             method: 'post',
@@ -73,10 +118,18 @@
 {{end}}
 
 {{define "posts"}}
-    <div class="fh-feed__posts mdl-grid">
-        {{range .Posts}}
-            {{block "post" .}}{{end}}
-        {{end}}
-        {{block "postScript" .}}{{end}}
-    </div>
+    <div id='post-div' class="fh-feed__posts mdl-grid">
+        {{block "postsonly" .}}{{end}}
+        {{block "postScript" .}}{{end}}        
+    </div>    
 {{end}}
+
+{{define "postsonly"}}
+    {{range .Posts}}
+            {{block "post" .}}{{end}}
+    {{end}}
+    {{if .Cursor}}
+        <a id='{{.Cursor}}' href='' onclick='return pagePosts({{.Cursor}})'>More</a>        
+    {{end}}
+{{end}}
+

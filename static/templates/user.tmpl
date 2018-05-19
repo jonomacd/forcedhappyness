@@ -1,40 +1,32 @@
 {{define "body"}}
 {{$IsUser :=  .HasSession | and (eq .SessionUser.ID  .User.ID) }}
-<style>
-    #view-source {
-        position: fixed;
-        display: block;
-        right: 0;
-        bottom: 0;
-        margin-right: 40px;
-        margin-bottom: 40px;
-        z-index: 900;
-    }
-</style>
 
-    <main class="mdl-layout__content">
-        <section class="mdl-card mdl-grid mdl-grid--no-spacing user-bar">
+        
+<div class="fh-feed mdl-layout mdl-js-layout has-drawer is-upgraded">
+    <main class="mdl-layout__content">    
+        <div class="user-card">
             <div class="user-avatar">
                 <img src="{{.User.AvatarUrl}}" height="210" width="210" onerror="this.src='/static/img/unknown-user.png'"/>
             </div>
-            <div class="mdl-card__supporting-text mdl-cell mdl-cell--4-col">
+            <div class="name-details">
                 <h4>{{.User.NameTitle}}</h4>
                 {{.User.Details}}
             </div>
             {{if .HasSession | and (not $IsUser)}}
-                <div class="mdl-card__supporting-text mdl-cell mdl-cell--2-col">
+                <div class="follow-button">
                     <button id='follow-button' onclick='toggleFollow({{.User.ID}})'class="follow-button mdl-cell--middle mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
                         {{if .Follows}}Unfollow{{else}}Follow{{end}}
                     </button>
                 </div>
             {{end}}
-        </section>
-        <div class="fh-feed mdl-layout mdl-js-layout has-drawer is-upgraded">
-            {{block "posts" .}}
-                Whoops looks like you have landed somewhere strange
-            {{end}}
-        </div>
+        </div>        
+
+        {{block "posts" .}}
+            Whoops looks like you have landed somewhere strange
+        {{end}}
     </main>
+</div>
+    
 
 {{if .HasSession | and (not $IsUser)}}
 <script>

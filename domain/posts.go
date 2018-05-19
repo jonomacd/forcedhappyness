@@ -27,6 +27,10 @@ type Post struct {
 	Analysis *languagepb.AnnotateTextResponse `datastore:"-"`
 }
 
+func (p Post) ReplyTo() string {
+	return p.ID
+}
+
 type PostWithUser struct {
 	Post      Post
 	User      User
@@ -46,6 +50,7 @@ func (post Post) FormattedDate() string {
 type PageData struct {
 	BasePage
 	Posts   []PostWithUser
+	Cursor  string
 	ReplyTo string
 	Sub     string
 }

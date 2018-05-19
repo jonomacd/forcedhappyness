@@ -212,6 +212,39 @@ func ReadPostsBySubTime(ctx context.Context, sub, cursor string, limit int) ([]P
 	return posts, c.String(), nil
 }
 
+func SearchPostByMention(ctx context.Context, mention, cursor string, limit int) ([]Post, string, error) {
+	c, err := datastore.DecodeCursor(cursor)
+	if err != nil {
+		return nil, "", err
+	}
+	q := datastore.NewQuery(KindPost).Filter("Mentions = ", mention).Filter("IsReply =", false).Order("-Date").Start(c).Limit(limit)
+	posts := []Post{}
+	it := ds.Run(ctx, q)
+	for {
+		p := Post{}
+		_, err := it.Next(&p)
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return []Post{}, "", err
+		}
+
+		c, err = it.Cursor()
+		if err != nil {
+			return []Post{}, "", err
+		}
+		populatePost(&p)
+		posts = append(posts, p)
+	}
+
+	if len(posts) == 0 {
+		return []Post{}, "", ErrNotFound
+	}
+
+	return posts, c.String(), nil
+}
+
 func updateLikePost(ctx context.Context, postID string, update int64) error {
 	tx, err := ds.NewTransaction(ctx)
 	if err != nil {

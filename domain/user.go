@@ -38,4 +38,5 @@ type UserPage struct {
 	User    User
 	Posts   []PostWithUser
 	Follows bool
+	Cursor  string
 }

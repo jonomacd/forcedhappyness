@@ -24,10 +24,21 @@ func NewHomeFeedHandler(ss sessions.Store) *HomeFeedHandler {
 
 func (h *HomeFeedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	renderHome(w, r, h.ss, "")
-
 }
 
 func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub string) {
+	pg, err := getHomePosts(w, r, ss, sub, "")
+	if err != nil {
+		log.Printf("Could not get home posts", err)
+		return
+	}
+	err = tmpl.GetTemplate("home").Execute(w, pg)
+	if err != nil {
+		log.Printf("Template failed: %v", err)
+	}
+}
+
+func getHomePosts(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub, cursor string) (domain.PageData, error) {
 	userID, hasSession := getUserID(w, r, ss)
 	if !hasSession {
 		// No session means that we will just give them all
@@ -37,13 +48,14 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 
 	var err error
 	var posts []dao.Post
+
 	if sub == "all" {
-		posts, _, err = dao.ReadPostsByTime(ctx, "", 100)
+		posts, cursor, err = dao.ReadPostsByTime(ctx, cursor, 5)
 		if err != nil && err != dao.ErrNotFound {
 			log.Printf("Post read failed: %v", err)
 		}
 	} else if sub != "" {
-		posts, _, err = dao.ReadPostsBySubTime(ctx, sub, "", 100)
+		posts, cursor, err = dao.ReadPostsBySubTime(ctx, sub, cursor, 100)
 		if err != nil && err != dao.ErrNotFound {
 			log.Printf("Post read failed: %v", err)
 		}
@@ -51,16 +63,28 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 		u, err := dao.ReadUserByID(ctx, userID)
 		if err != nil {
 			log.Printf("could not read user: %v", err)
-			return
+			return domain.PageData{}, err
 		}
 
 		posts, _, err = dao.ReadPostsByUsers(ctx, u.Follows, 20)
+		if err != nil && err != dao.ErrNotFound {
+			log.Printf("could not read follows: %v", err)
+			return domain.PageData{}, err
+		}
+
+		mentionPosts, _, err := dao.SearchPostByMention(ctx, u.ID, "", 20)
+		if err != nil && err != dao.ErrNotFound {
+			log.Printf("could not mention posts: %v", err)
+			return domain.PageData{}, err
+		}
+
+		posts = append(posts, mentionPosts...)
 		sort.Slice(posts, func(i, j int) bool {
 			return posts[i].Date.After(posts[j].Date)
 		})
 		if len(posts) == 0 {
 			renderHome(w, r, ss, "all")
-			return
+			return domain.PageData{}, nil
 		}
 	}
 	pg := domain.PageData{
@@ -68,7 +92,8 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 		BasePage: domain.BasePage{
 			HasSession: hasSession,
 		},
-		Sub: sub,
+		Sub:    sub,
+		Cursor: cursor,
 	}
 	for _, post := range posts {
 		user, err := dao.ReadUserByID(context.Background(), post.UserID)
@@ -90,8 +115,5 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 
 	}
 
-	err = tmpl.GetTemplate("home").Execute(w, pg)
-	if err != nil {
-		log.Printf("Template failed: %v", err)
-	}
+	return pg, nil
 }

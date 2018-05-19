@@ -65,7 +65,7 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 		}
 	}
 
-	posts, _, err := dao.ReadPostsByUser(ctx, u.ID, "", 100)
+	posts, cursor, err := dao.ReadPostsByUser(ctx, u.ID, "", 5)
 	pg := domain.UserPage{
 		User: u.User,
 		BasePage: domain.BasePage{
@@ -73,6 +73,7 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 			SessionUser: sessionUser.User,
 		},
 		Follows: follows,
+		Cursor:  cursor,
 	}
 	for _, post := range posts {
 

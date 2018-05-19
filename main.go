@@ -31,6 +31,7 @@ func registerHandlers() {
 	http.Handle("/", handler.NewHomeFeedHandler(sessionStore))
 	http.Handle("/u/", handler.NewSubHandler(sessionStore))
 	http.Handle("/post/", handler.NewPostHandler(sessionStore))
+	http.Handle("/post/page/", handler.NewPagingPostHandler(sessionStore))
 	http.Handle("/user/", handler.NewUserHandler(sessionStore))
 	http.Handle("/submit", handler.NewSubmitHandler(sessionStore))
 	http.Handle("/reply/", handler.NewReplyHandler(sessionStore))

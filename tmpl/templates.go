@@ -28,6 +28,7 @@ var (
 			filepaths: []string{
 				templateDir + "comments" + ext,
 				templateDir + "post" + ext,
+				templateDir + "submitform" + ext,
 			},
 		},
 		"user": &TemplateInfo{
@@ -35,6 +36,7 @@ var (
 			filepaths: []string{
 				templateDir + "user" + ext,
 				templateDir + "post" + ext,
+				templateDir + "submitform" + ext,
 			},
 		},
 		"login": &TemplateInfo{
@@ -52,6 +54,14 @@ var (
 			Name:      "register",
 			filepaths: []string{templateDir + "register" + ext},
 		},
+		"postonly": &TemplateInfo{
+			Name:   "postonly",
+			noBase: true,
+			filepaths: []string{
+				templateDir + "post" + ext,
+				templateDir + "submitform" + ext,
+			},
+		},
 	}
 )
 
@@ -59,6 +69,7 @@ type TemplateInfo struct {
 	Name      string
 	filepaths []string
 	Template  *template.Template
+	noBase    bool
 }
 
 func MustInit() {
@@ -79,7 +90,11 @@ func (ti *TemplateInfo) LoadTemplate(base *template.Template) {
 	}
 
 	log.Printf("Running template group %s", ti.Name)
-	ti.Template = base
+	if !ti.noBase {
+		ti.Template = base
+	} else {
+		ti.Template = template.New(ti.Name)
+	}
 
 	for _, filepath := range ti.filepaths {
 		ti.Template = template.Must(ti.Template.Parse(loadTemplateString(filepath)))
