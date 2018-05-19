@@ -34,9 +34,8 @@ func (u User) NameTitle() string {
 }
 
 type UserPage struct {
-	BasePage
+	*BasePage
 	User    User
 	Posts   []PostWithUser
 	Follows bool
-	Cursor  string
 }

@@ -62,6 +62,12 @@ var (
 				templateDir + "submitform" + ext,
 			},
 		},
+		"error": &TemplateInfo{
+			Name: "error",
+			filepaths: []string{
+				templateDir + "error" + ext,
+			},
+		},
 	}
 )
 

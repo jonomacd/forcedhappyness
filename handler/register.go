@@ -44,6 +44,9 @@ func (h *RegisterHandler) post(w http.ResponseWriter, r *http.Request) {
 
 	if password != confirmpassword {
 		log.Printf("non matching passwords")
+		tmpl.GetTemplate("register").Execute(w, domain.BasePage{
+			ErrorToast: "Whoops, those passwords do not match",
+		})
 		return
 	}
 
@@ -58,6 +61,8 @@ func (h *RegisterHandler) post(w http.ResponseWriter, r *http.Request) {
 	bb, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Printf("cannot generate password hash %v", err)
+		renderError(w, "Whoops, There was a problem trying create user", false)
+		return
 	}
 	du := &dao.User{
 		User:         u,
@@ -65,13 +70,24 @@ func (h *RegisterHandler) post(w http.ResponseWriter, r *http.Request) {
 	}
 	err = dao.CreateUser(context.Background(), du)
 	if err != nil {
+
+		if err == dao.ErrEmailExists || err == dao.ErrUsernameExists {
+			tmpl.GetTemplate("register").Execute(w, domain.BasePage{
+				ErrorToast: "Drat, " + err.Error(),
+			})
+			return
+		}
+
 		log.Printf("Bad user: %v", err)
+		renderError(w, "Whoops, There was a problem trying to build this page", false)
 		return
 	}
 
 	err = newSession(w, r, h.ss, du.ID)
 	if err != nil {
 		log.Printf("Bad session: %v", err)
+		renderError(w, "Whoops, There was a problem trying to build this page", false)
+		return
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -84,5 +100,7 @@ func (h *RegisterHandler) get(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		log.Printf("Template failed: %v", err)
+		renderError(w, "Whoops, There was a problem trying to build this page", ses)
+		return
 	}
 }

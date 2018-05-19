@@ -1,6 +1,6 @@
 {{define "submitform"}}
     <form class="submit-form" action='/submit' method='post'>
-        <textarea class="mdl-textfield__input message-input expanding" type="text" id="message" placeholder="Write you thoughts here. Remember to be nice..." name="message" required></textarea>
+        <textarea class="mdl-textfield__input message-input expanding" type="text" id="message" placeholder="Write here. Remember to be nice..." name="message" required></textarea>
         </br>
         {{if .Sub}}<input type="hidden" name="sub" value="{{.Sub}}">{{end}}
         {{if .ReplyTo}}<input type="hidden" name="replyto" value="{{.ReplyTo}}">{{end}}

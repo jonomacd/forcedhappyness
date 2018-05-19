@@ -12,6 +12,11 @@ const (
 	KindUser = "user"
 )
 
+var (
+	ErrUsernameExists = fmt.Errorf("Username Exists")
+	ErrEmailExists    = fmt.Errorf("Email Exists")
+)
+
 type User struct {
 	domain.User  `datastore:",flatten"`
 	PasswordHash []byte
@@ -26,12 +31,12 @@ func CreateUser(ctx context.Context, u *User) error {
 
 	_, err := ReadUserByEmail(ctx, u.Email)
 	if err != datastore.ErrNoSuchEntity {
-		return fmt.Errorf("Email already used")
+		return ErrEmailExists
 	}
 
 	_, err = ReadUserByUsername(ctx, u.Username)
 	if err != datastore.ErrNoSuchEntity {
-		return fmt.Errorf("Username already used")
+		return ErrUsernameExists
 	}
 
 	key := datastore.NameKey(KindUser, u.ID, nil)

@@ -41,12 +41,19 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 	username, err := parth.SubSegToString(r.URL.Path, "user")
 	if err != nil {
 		log.Printf("error parsing userID %v", err)
+		renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 		return
 	}
 
 	u, err := dao.ReadUserByUsername(context.Background(), username)
 	if err != nil {
+
+		if err == dao.ErrNotFound {
+			renderError(w, "Hmm... this user doesn't appear to exist...", hasSession)
+			return
+		}
 		log.Printf("error reading userID %s: %v", username, err)
+		renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 		return
 	}
 
@@ -56,6 +63,7 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 		sessionUser, err = dao.ReadUserByID(ctx, userID)
 		if err != nil {
 			log.Printf("Unable to read session user %s: %v", userID, err)
+			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 			return
 		}
 
@@ -70,7 +78,7 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 	posts, next, err := dao.ReadPostsByUser(ctx, u.ID, cursor, 5)
 	pg := domain.UserPage{
 		User: u.User,
-		BasePage: domain.BasePage{
+		BasePage: &domain.BasePage{
 			HasSession:  hasSession,
 			SessionUser: sessionUser.User,
 			Next:        next,
@@ -96,5 +104,6 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 	err = tmpl.GetTemplate("user").Execute(w, pg)
 	if err != nil {
 		log.Printf("Template failed: %v", err)
+		renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 	}
 }

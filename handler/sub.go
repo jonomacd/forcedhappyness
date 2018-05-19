@@ -24,11 +24,12 @@ func (h *SubHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if forceTrailingSlash(w, r) {
 		return
 	}
-
+	_, hasSession := getUserID(w, r, h.ss)
 	pathLen := len(strings.Split(strings.Trim(r.URL.Path, "/"), "/"))
 	sub, err := parth.SubSegToString(r.URL.Path, "u")
 	if err != nil {
 		log.Printf("error getting sub: %v", err)
+		renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 		return
 	}
 	switch pathLen {
@@ -38,6 +39,7 @@ func (h *SubHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		action, err := parth.SegmentToString(r.URL.Path, 2)
 		if err != nil {
 			log.Printf("error getting action: %v", err)
+			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 			return
 		}
 		if action == "submit" {

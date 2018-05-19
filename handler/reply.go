@@ -43,7 +43,7 @@ func renderReply(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 
 	err = tmpl.GetTemplate("submit").Execute(w, &domain.Submit{
 		ReplyTo: parent,
-		BasePage: domain.BasePage{
+		BasePage: &domain.BasePage{
 			HasSession: hasSession,
 		},
 	})

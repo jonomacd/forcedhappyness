@@ -43,7 +43,7 @@ func renderSubmit(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub
 
 	err := tmpl.GetTemplate("submit").Execute(w, &domain.Submit{
 		Sub: sub,
-		BasePage: domain.BasePage{
+		BasePage: &domain.BasePage{
 			HasSession: hasSession,
 		},
 	})

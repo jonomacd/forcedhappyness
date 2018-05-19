@@ -28,6 +28,7 @@ func (h *HomeFeedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub string) {
+
 	userID, hasSession := getUserID(w, r, ss)
 	if !hasSession {
 		// No session means that we will just give them all
@@ -42,44 +43,39 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 	if sub == "all" {
 		posts, next, err = dao.ReadPostsByTime(ctx, cursor, 20)
 		if err != nil && err != dao.ErrNotFound {
-			log.Printf("Post read failed: %v", err)
+			log.Printf("Post read by time failed: %v", err)
+			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
+			return
 		}
 	} else if sub != "" {
 		posts, next, err = dao.ReadPostsBySubTime(ctx, sub, cursor, 20)
 		if err != nil && err != dao.ErrNotFound {
-			log.Printf("Post read failed: %v", err)
+			log.Printf("Post read by sub failed: %v", err)
+			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
+			return
 		}
 	} else {
 		u, err := dao.ReadUserByID(ctx, userID)
 		if err != nil {
 			log.Printf("could not read user: %v", err)
+			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 			return
 		}
 
-		posts, _, err = dao.ReadPostsByUsers(ctx, u.Follows, 20)
-		if err != nil && err != dao.ErrNotFound {
-			log.Printf("could not read follows: %v", err)
+		posts, next, err = ReadUserMentionAndFollowPosts(ctx, u, cursor)
+		if err != nil {
+			log.Printf("could not read post,mention,user: %v", err)
+			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 			return
 		}
-
-		mentionPosts, _, err := dao.SearchPostByMention(ctx, u.ID, cursor, 20)
-		if err != nil && err != dao.ErrNotFound {
-			log.Printf("could not mention posts: %v", err)
-			return
-		}
-
-		posts = append(posts, mentionPosts...)
-		sort.Slice(posts, func(i, j int) bool {
-			return posts[i].Date.After(posts[j].Date)
-		})
-		if len(posts) == 0 {
+		if len(posts) == 0 && cursor == "" {
 			renderHome(w, r, ss, "all")
 			return
 		}
 	}
 	pg := domain.PageData{
 		Posts: []domain.PostWithUser{},
-		BasePage: domain.BasePage{
+		BasePage: &domain.BasePage{
 			HasSession: hasSession,
 			Next:       next,
 			Previous:   cursor,
@@ -89,7 +85,9 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 	for _, post := range posts {
 		user, err := dao.ReadUserByID(context.Background(), post.UserID)
 		if err != nil {
-			log.Printf("Post read failed: %v", err)
+			log.Printf("user read failed: %v", err)
+			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
+			return
 		}
 
 		hasLiked := false
@@ -106,8 +104,49 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 
 	}
 
+	if len(pg.Posts) < 20 {
+		pg.Next = ""
+	}
+
 	err = tmpl.GetTemplate("home").Execute(w, pg)
 	if err != nil {
+		renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 		log.Printf("Template failed: %v", err)
 	}
+}
+
+func ReadUserMentionAndFollowPosts(ctx context.Context, u dao.User, cursor string) ([]dao.Post, string, error) {
+
+	cc, err := dao.ReadCursor(ctx, cursor)
+	if err != nil {
+		return nil, "", err
+	}
+
+	mentionPosts, mentionCursor, err := dao.SearchPostByMention(ctx, u.ID, cc["mentions"], 20)
+	if err != nil && err != dao.ErrNotFound {
+		log.Printf("could not mention posts: %v", err)
+		return nil, "", err
+	}
+
+	posts, cursors, err := dao.ReadPostsByUsers(ctx, u.Follows, cc, 20)
+	if err != nil && err != dao.ErrNotFound {
+		log.Printf("could not read follows: %v", err)
+		return nil, "", err
+	}
+
+	cursors["mentions"] = mentionCursor
+
+	cursor, err = dao.CreateCursor(ctx, cursors)
+	if err != nil && err != dao.ErrNotFound {
+		log.Printf("could not create cursor: %v", err)
+		return nil, "", err
+	}
+
+	posts = append(posts, mentionPosts...)
+	sort.Slice(posts, func(i, j int) bool {
+		return posts[i].Date.After(posts[j].Date)
+	})
+
+	return posts, cursor, nil
+
 }

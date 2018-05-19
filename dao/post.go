@@ -163,19 +163,24 @@ func ReadPostsByUser(ctx context.Context, userID, cursor string, limit int) ([]P
 	return posts, c.String(), nil
 }
 
-func ReadPostsByUsers(ctx context.Context, userIDs []string, limit int) ([]Post, []string, error) {
+func ReadPostsByUsers(ctx context.Context, userIDs []string, cursors map[string]string, limit int) ([]Post, map[string]string, error) {
 	var posts []Post
-	var cursors []string
-	for _, userID := range userIDs {
-		ups, c, err := ReadPostsByUser(ctx, userID, "", limit)
-		if err != nil {
-			return []Post{}, nil, err
-		}
-		posts = append(posts, ups...)
-		cursors = append(cursors, c)
+	if cursors == nil {
+		cursors = map[string]string{}
 	}
 
-	return posts, cursors, nil
+	newCursors := map[string]string{}
+	for _, userID := range userIDs {
+		ups, c, err := ReadPostsByUser(ctx, userID, cursors[userID], limit)
+		if err != nil {
+			return []Post{}, newCursors, err
+		}
+		posts = append(posts, ups...)
+
+		newCursors[userID] = c
+	}
+
+	return posts, newCursors, nil
 }
 
 func ReadPostsBySubTime(ctx context.Context, sub, cursor string, limit int) ([]Post, string, error) {

@@ -40,7 +40,22 @@ func (h *LoginHandler) post(w http.ResponseWriter, r *http.Request) {
 
 	u, err := dao.ReadUserByEmail(context.Background(), email)
 	if err != nil {
+		if err == dao.ErrNotFound {
+			err := tmpl.GetTemplate("login").Execute(w, &loginTemplate{
+				BasePage: &domain.BasePage{
+					ErrorToast: "Unable to read user",
+				},
+			})
+			if err != nil {
+				log.Printf("Template failed: %v", err)
+				renderError(w, "Whoops, There was a problem trying to build this page", false)
+				return
+			}
+			return
+		}
 		log.Printf("Couldn't read user %v", err)
+		renderError(w, "Whoops, There was a problem trying to build this page", false)
+		return
 	}
 
 	redirect := r.Form.Get("redirect")
@@ -51,11 +66,14 @@ func (h *LoginHandler) post(w http.ResponseWriter, r *http.Request) {
 	err = bcrypt.CompareHashAndPassword(u.PasswordHash, []byte(password))
 	if err != nil {
 		err := tmpl.GetTemplate("login").Execute(w, &loginTemplate{
-			Redirect: redirect,
-			Error:    "Unauthorized",
+			BasePage: &domain.BasePage{
+				ErrorToast: "Unable to read user",
+			},
 		})
 		if err != nil {
 			log.Printf("Template failed: %v", err)
+			renderError(w, "Whoops, There was a problem trying to build this page", false)
+			return
 		}
 
 		return
@@ -64,6 +82,8 @@ func (h *LoginHandler) post(w http.ResponseWriter, r *http.Request) {
 	err = newSession(w, r, h.ss, u.ID)
 	if err != nil {
 		log.Printf("Bad session: %v", err)
+		renderError(w, "Whoops, There was a problem trying to build this page", false)
+		return
 	}
 
 	http.Redirect(w, r, redirect, http.StatusSeeOther)
@@ -71,8 +91,7 @@ func (h *LoginHandler) post(w http.ResponseWriter, r *http.Request) {
 
 type loginTemplate struct {
 	Redirect string
-	Error    string
-	domain.BasePage
+	*domain.BasePage
 }
 
 func (h *LoginHandler) get(w http.ResponseWriter, r *http.Request) {
@@ -80,6 +99,7 @@ func (h *LoginHandler) get(w http.ResponseWriter, r *http.Request) {
 	redirect := r.URL.Query().Get("redirect")
 
 	err := tmpl.GetTemplate("login").Execute(w, &loginTemplate{
+		BasePage: &domain.BasePage{},
 		Redirect: redirect,
 	})
 	if err != nil {

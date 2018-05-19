@@ -36,16 +36,18 @@ func renderPost(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 
 	postID, err := parth.SubSegToString(r.URL.Path, "post")
 	if err != nil {
+		renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 		return
 	}
 
 	posts, err := dao.ReadPostAndRepliesByID(context.Background(), postID)
 	if err != nil {
 		log.Printf("Cannot read post %v: %v", postID, err)
+		renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 		return
 	}
 	pg := domain.CommentData{
-		BasePage: domain.BasePage{
+		BasePage: &domain.BasePage{
 			HasSession: hasSession,
 		},
 	}
@@ -58,6 +60,8 @@ func renderPost(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 		user, err := dao.ReadUserByID(context.Background(), post.UserID)
 		if err != nil {
 			log.Printf("Post read failed: %v", err)
+			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
+			return
 		}
 
 		hasLiked := false
@@ -88,6 +92,8 @@ func renderPost(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 	err = tmpl.GetTemplate("comments").Execute(w, pg)
 	if err != nil {
 		log.Printf("Template failed: %v", err)
+		renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
+		return
 	}
 }
 
