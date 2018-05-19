@@ -1,77 +1,13 @@
 {{define "body"}}
-<style>
-    #view-source {
-        position: fixed;
-        display: block;
-        right: 0;
-        bottom: 0;
-        margin-right: 40px;
-        margin-bottom: 40px;
-        z-index: 900;
-    }
-</style>
 <div class="fh-feed mdl-layout mdl-js-layout has-drawer is-upgraded">
     <main class="mdl-layout__content">
-        <div class="fh-feed__posts mdl-grid">
-            {{range .Posts}}
-            <div name="{{.Post.ID}}" class="mdl-card amazing mdl-cell mdl-cell--12-col">
-                <div class="mdl-card__title mdl-color-text--grey-50">
-                    <h3 class="quote">
-                        {{.Post.Text}}
-                    </h3>                               
-                </div>
-                <div class="mdl-card__supporting-text meta mdl-color-text--grey-600">                        
-                    <div>
-                        <strong>{{.User.Name}}</strong>
-                        <span>{{.Post.FormattedDate}}</span>
-                    </div>        
-                    <a id='like-{{.Post.ID}}' onclick="toggleLike({{.Post.ID}})" style='text-decoration: none;' class="material-icons">{{if .HasLiked}}favorite{{else}}favorite_border{{end}}</a>
-                    <span id='likebadge-{{.Post.ID}}' class="mdl-badge" data-badge="{{.Post.Likes}}"></span>
-                    {{if .Post.Sub}}<div><a href="/u/{{.Post.Sub}}/">/u/{{.Post.Sub}}</a></div>{{end}}
-                </div>
-            </div>
-            {{end}}
+        <div class="submit-feed">
+            {{block "submitform" .}}{{end}}
         </div>
+        {{block "posts" .}}
+            Whoops looks like you have landed somehwhere strange
+        {{end}}
     </main>
 </div>
-
-{{if .HasSession}}<a href="post" id="view-source" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-color--accent mdl-color-text--white">+</a>{{end}}
     
-<script>
-function toggleLike(postID){
-    fetch('/like', {
-        method: 'post',
-        credentials: 'include',
-        headers: {
-        "Content-type": "application/json; charset=UTF-8"
-        },
-        body: JSON.stringify({
-            postID: postID,
-        })
-    })
-    .then(function (response) {
-        if (response.status == 200) {
-            response.json().then(function(data) {
-                var aa = document.getElementById('like-'+postID);
-                var bb = document.getElementById('likebadge-'+postID);
-                var badgeVal = bb.getAttribute('data-badge');
-                if (data.liked) {
-                    aa.innerText = "favorite";
-                    badgeVal++;
-                    bb.setAttribute('data-badge', badgeVal);
-                }else {
-                    aa.innerText = "favorite_border";
-                    badgeVal--;
-                    bb.setAttribute('data-badge', badgeVal);
-                }
-            });                            
-        }
-    })
-    .catch(function (error) {
-        var snackbarContainer = document.querySelector('#error-snackbar');
-        var data = {message: 'Error Updating Like'};
-        snackbarContainer.MaterialSnackbar.showSnackbar(data);
-    });
-}
-</script>
 {{end}}

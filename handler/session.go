@@ -36,5 +36,5 @@ func newSession(w http.ResponseWriter, r *http.Request, ss sessions.Store, userI
 }
 
 func redirectLogin(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/login?redirect="+url.PathEscape(r.URL.Path), 301)
+	http.Redirect(w, r, "/login?redirect="+url.PathEscape(r.URL.Path), http.StatusSeeOther)
 }

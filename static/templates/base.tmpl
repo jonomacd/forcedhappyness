@@ -30,21 +30,29 @@
         <div class="mdl-layout__header-row">
           <span class="fh-title mdl-layout-title">
             <a style="text-decoration: none;" class="mdl-typography--text-uppercase mdl-color-text--grey-600" href="/">Forced Happyness</a>
-          </span>
+          </span>          
           <!-- Add spacer, to align navigation to the right in desktop -->
           <div class="fh-header-spacer mdl-layout-spacer"></div>          
          <!-- Navigation -->
          <div class="fh-navigation-container">
           <nav class="fh-navigation mdl-navigation">            
-            <a class="mdl-navigation__link mdl-typography--text-uppercase" onclick="document.cookie = 'session=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';" href="{{if .HasSession}}/{{else}}/login{{end}}">{{if .HasSession}}Sign Out{{else}}Sign In{{end}}</a>
+            <a class="mdl-navigation__link mdl-typography--text-uppercase" href="" onclick="document.cookie = 'session=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';window.location.href ='/login';return false;">{{if .HasSession}}Sign Out{{else}}Sign In{{end}}</a>
           </nav>
         </div>         
        </div>
     </div>
 
-    {{block "body" .}}
-    Whoops looks like you have landed somehwhere strange
-    {{end}}
+    <div class="main-flex">
+      <div class="left-gradient gradients">
+      </div>
+      <div class="main-body">
+      {{block "body" .}}
+      Whoops looks like you have   landed somehwhere strange
+      {{end}}
+      </div>
+      <div class="right-gradient gradients">
+      </div>
+    </div>
   </body>
 
 

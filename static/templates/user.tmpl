@@ -1,0 +1,75 @@
+{{define "body"}}
+{{$IsUser :=  .HasSession | and (eq .SessionUser.ID  .User.ID) }}
+<style>
+    #view-source {
+        position: fixed;
+        display: block;
+        right: 0;
+        bottom: 0;
+        margin-right: 40px;
+        margin-bottom: 40px;
+        z-index: 900;
+    }
+</style>
+
+    <main class="mdl-layout__content">
+        <section class="mdl-card mdl-grid mdl-grid--no-spacing user-bar">
+            <div class="user-avatar">
+                <img src="{{.User.AvatarUrl}}" height="210" width="210" onerror="this.src='/static/img/unknown-user.png'"/>
+            </div>
+            <div class="mdl-card__supporting-text mdl-cell mdl-cell--4-col">
+                <h4>{{.User.NameTitle}}</h4>
+                {{.User.Details}}
+            </div>
+            {{if .HasSession | and (not $IsUser)}}
+                <div class="mdl-card__supporting-text mdl-cell mdl-cell--2-col">
+                    <button id='follow-button' onclick='toggleFollow({{.User.ID}})'class="follow-button mdl-cell--middle mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+                        {{if .Follows}}Unfollow{{else}}Follow{{end}}
+                    </button>
+                </div>
+            {{end}}
+        </section>
+        <div class="fh-feed mdl-layout mdl-js-layout has-drawer is-upgraded">
+            {{block "posts" .}}
+                Whoops looks like you have landed somewhere strange
+            {{end}}
+        </div>
+    </main>
+
+{{if .HasSession | and (not $IsUser)}}
+<script>
+    function toggleFollow(userID){
+        fetch('/follow', {
+            method: 'post',
+            credentials: 'include',
+            headers: {
+            "Content-type": "application/json; charset=UTF-8"
+            },
+            body: JSON.stringify({
+                userID: userID,
+            })
+        })
+        .then(function (response) {
+            if (response.status == 200) {
+                response.json().then(function(data) {
+                    var aa = document.getElementById('follow-button');                                        
+                    if (data.follows) {
+                        aa.innerText = "Unfollow";                        
+                    }else {
+                        aa.innerText = "Follow";
+                    }
+                });                            
+            }
+        })
+        .catch(function (error) {
+            var snackbarContainer = document.querySelector('#error-snackbar');
+            var data = {message: 'Error Updating Follow'};
+            snackbarContainer.MaterialSnackbar.showSnackbar(data);
+        });
+        return false
+    }
+</script>
+{{end}}
+
+
+{{end}}

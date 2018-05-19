@@ -1,0 +1,19 @@
+{{define "body"}}    
+    <div class="fh-feed mdl-layout mdl-js-layout has-drawer is-upgraded">
+        <main class="mdl-layout__content">
+            <div class="fh-feed__posts mdl-grid">
+                <div class="mdl-card amazing mdl-cell mdl-cell--12-col">
+                    <div class="mdl-card--border">
+                        <div class="mdl-grid">      
+                        <div class="mdl-cell mdl-cell--2-col"></div>
+                            <div class="mdl-cell">                    
+                                {{block "submitform" . }}{{end}}
+                            </div>  
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>    
+{{end}}
+

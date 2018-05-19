@@ -1,9 +1,12 @@
 {{define "body"}}
 <div class="fh-feed mdl-layout mdl-js-layout has-drawer is-upgraded">
     <main class="mdl-layout__content">
-        <div class="fh-feed__posts mdl-grid">
-            <div class="mdl-card amazing mdl-cell mdl-cell--12-col">
-                <div class="mdl-card--border">
+        <div class="mdl-card mdl-cell mdl-cell--12-col">
+            <div class="mdl-grid">
+                <div class="mdl-cell mdl-cell--4-col">
+                    <img src="/static/img/unknown-user.png" height="150" width="150"/>
+                </div>
+                <div class="mdl-cell mdl-cell--8-col">
                     <form action="/login?redirect={{.Redirect}}" method='post'>                        
                         
                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
@@ -17,18 +20,17 @@
                         </div>                            
                         </br>
                         <input type="hidden" name="redirect" value="{{.Redirect}}">
-                        <input type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effec" value="Login">                            
-                    </form>
-                    <a href='/register'>No Account? Sign Up Here</a> 
-                    {{if .Error}}
-                    </br>
-                    <div class="mdl-card__supporting-text meta mdl-color-text--red-600">                        
+                        <input type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effec" value="Login">
+                        <a style="margin: 25px;" href='/register'>No Account? Sign Up Here</a>
+                    </form>                                                    
+                </div>
+                {{if .Error}}                    
+                    <div class="mdl-cell mdl-color-text--red-600 mdl-cell--2-col">                        
                         <div>
                             <strong>{{.Error}}</strong>                                    
                         </div>
                     </div>
-                    {{end}}
-                </div>
+                {{end}}
             </div>
         </div>
     </main>

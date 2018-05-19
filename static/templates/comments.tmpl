@@ -1,0 +1,21 @@
+{{define "body"}}
+    <div class="fh-feed mdl-layout mdl-js-layout has-drawer is-upgraded">
+        <main class="mdl-layout__content">
+            <div class="fh-feed__posts mdl-grid">
+                {{block "postAndComments" .Post}}{{end}}            
+            </div>
+        </main>
+    </div>
+    {{block "postScript" .}}{{end}}
+{{end}}
+
+{{define "postAndComments"}}
+    {{block "post" .}}{{end}}
+    {{if .Comments}}
+    <div class='comment-nest'>    
+    {{range .Comments}}
+        {{block "postAndComments" .}}{{end}}
+    {{end}}
+    </div>    
+    {{end}}
+{{end}}

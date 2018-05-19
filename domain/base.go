@@ -1,5 +1,6 @@
 package domain
 
 type BasePage struct {
-	HasSession bool
+	HasSession  bool
+	SessionUser User
 }

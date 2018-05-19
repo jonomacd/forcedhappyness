@@ -66,7 +66,7 @@ func (h *LoginHandler) post(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Bad session: %v", err)
 	}
 
-	http.Redirect(w, r, redirect, 301)
+	http.Redirect(w, r, redirect, http.StatusSeeOther)
 }
 
 type loginTemplate struct {

@@ -16,28 +16,49 @@ const (
 var (
 	Templates = map[string]*TemplateInfo{
 		"home": &TemplateInfo{
-			Name:     "home",
-			filepath: templateDir + "feed" + ext,
+			Name: "home",
+			filepaths: []string{
+				templateDir + "submitform" + ext,
+				templateDir + "feed" + ext,
+				templateDir + "post" + ext,
+			},
+		},
+		"comments": &TemplateInfo{
+			Name: "comments",
+			filepaths: []string{
+				templateDir + "comments" + ext,
+				templateDir + "post" + ext,
+			},
+		},
+		"user": &TemplateInfo{
+			Name: "user",
+			filepaths: []string{
+				templateDir + "user" + ext,
+				templateDir + "post" + ext,
+			},
 		},
 		"login": &TemplateInfo{
-			Name:     "login",
-			filepath: templateDir + "login" + ext,
+			Name:      "login",
+			filepaths: []string{templateDir + "login" + ext},
 		},
-		"post": &TemplateInfo{
-			Name:     "post",
-			filepath: templateDir + "post" + ext,
+		"submit": &TemplateInfo{
+			Name: "submit",
+			filepaths: []string{
+				templateDir + "submitform" + ext,
+				templateDir + "submit" + ext,
+			},
 		},
 		"register": &TemplateInfo{
-			Name:     "register",
-			filepath: templateDir + "register" + ext,
+			Name:      "register",
+			filepaths: []string{templateDir + "register" + ext},
 		},
 	}
 )
 
 type TemplateInfo struct {
-	Name     string
-	filepath string
-	Template *template.Template
+	Name      string
+	filepaths []string
+	Template  *template.Template
 }
 
 func MustInit() {
@@ -53,7 +74,16 @@ func GetTemplate(name string) *template.Template {
 }
 
 func (ti *TemplateInfo) LoadTemplate(base *template.Template) {
-	ti.Template = template.Must(base.Parse(loadTemplateString(ti.filepath)))
+	if len(ti.filepaths) == 0 {
+		return
+	}
+
+	log.Printf("Running template group %s", ti.Name)
+	ti.Template = base
+
+	for _, filepath := range ti.filepaths {
+		ti.Template = template.Must(ti.Template.Parse(loadTemplateString(filepath)))
+	}
 }
 
 func loadTemplateString(filepath string) string {

@@ -2,9 +2,12 @@ package handler
 
 import (
 	"context"
+	"html/template"
 	"log"
 	"net/http"
-	"time"
+	"strings"
+
+	"github.com/codemodus/parth"
 
 	"github.com/gorilla/sessions"
 	"github.com/jonomacd/forcedhappyness/site/dao"
@@ -23,67 +26,98 @@ func NewPostHandler(ss sessions.Store) *PostHandler {
 }
 
 func (h *PostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "POST":
-		h.post(w, r)
-	case "GET":
-		h.get(w, r)
-	}
+	renderPost(w, r, h.ss)
+
 }
 
-type subData struct {
-	Sub string
-	domain.BasePage
-}
+func renderPost(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
+	userID, hasSession := getUserID(w, r, ss)
+	var err error
 
-func renderPost(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub string) {
-	_, hasSession := getUserID(w, r, ss)
-
-	if !hasSession {
-		redirectLogin(w, r)
+	postID, err := parth.SubSegToString(r.URL.Path, "post")
+	if err != nil {
 		return
 	}
 
-	err := tmpl.GetTemplate("post").Execute(w, &subData{
-		Sub: sub,
+	posts, err := dao.ReadPostAndRepliesByID(context.Background(), postID)
+	if err != nil {
+		log.Printf("Cannot read post %v: %v", postID, err)
+		return
+	}
+	pg := domain.CommentData{
 		BasePage: domain.BasePage{
 			HasSession: hasSession,
 		},
-	})
+	}
+
+	pmap := make(map[string][]domain.PostWithUser, len(posts))
+	var topPost domain.PostWithUser
+	for _, post := range posts {
+
+		post.Post.Text = linkMentionsAndHashtags(post.Post.Text, post.Post.MentionsUsername, post.Post.Hashtags)
+		user, err := dao.ReadUserByID(context.Background(), post.UserID)
+		if err != nil {
+			log.Printf("Post read failed: %v", err)
+		}
+
+		hasLiked := false
+		if userID != "" {
+			_, err := dao.ReadLike(context.Background(), userID, post.ID)
+			hasLiked = err == nil
+		}
+		pu := domain.PostWithUser{
+			Post:      post.Post,
+			User:      user.User,
+			HasLiked:  hasLiked,
+			Highlight: post.ID == postID,
+		}
+
+		if post.TopParent == post.ID {
+			topPost = pu
+			continue
+		}
+		pmap[post.Parent] = append(pmap[post.Parent], pu)
+	}
+
+	pg.Post = domain.PostWithComments{
+		PostWithUser: topPost,
+	}
+
+	populateComments(pmap, &pg.Post)
+
+	err = tmpl.GetTemplate("comments").Execute(w, pg)
 	if err != nil {
 		log.Printf("Template failed: %v", err)
 	}
 }
 
-func (h *PostHandler) get(w http.ResponseWriter, r *http.Request) {
-	renderPost(w, r, h.ss, "")
+func populateComments(parentMap map[string][]domain.PostWithUser, pwc *domain.PostWithComments) {
+	children, ok := parentMap[pwc.Post.ID]
+	if !ok {
+		return
+	}
+
+	for _, child := range children {
+		cpwc := domain.PostWithComments{
+			PostWithUser: child,
+		}
+		populateComments(parentMap, &cpwc)
+		pwc.Comments = append(pwc.Comments, cpwc)
+
+	}
 }
 
-func (h *PostHandler) post(w http.ResponseWriter, r *http.Request) {
-	userID, hasSession := getUserID(w, r, h.ss)
+// TODO: Move to function on post object
+func linkMentionsAndHashtags(htmlText template.HTML, mentionsUsername, hashtags []string) template.HTML {
 
-	if !hasSession {
-		redirectLogin(w, r)
-		return
+	text := string(htmlText)
+	for _, tag := range mentionsUsername {
+		text = strings.Replace(text, "@"+tag, "<a class='mention-link' href='/user/"+tag+"'>@"+tag+"</a>", -1)
 	}
 
-	r.ParseForm()
-	sub := r.Form.Get("sub")
-	err := dao.CreatePost(context.Background(), dao.Post{
-		Post: domain.Post{
-			Date:   time.Now(),
-			Text:   r.Form.Get("message"),
-			UserID: userID,
-			Sub:    sub,
-		},
-	})
-	if err != nil {
-		log.Printf("Error writing post: %v", err)
-		return
+	for _, tag := range hashtags {
+		text = strings.Replace(text, "#"+tag, "<a class='hashtag-link' href='/search?tag="+tag+"'>#"+tag+"</a>", -1)
 	}
-	url := "/"
-	if sub != "" {
-		url += "u/" + sub + "/"
-	}
-	http.Redirect(w, r, url, 301)
+
+	return template.HTML(text)
 }

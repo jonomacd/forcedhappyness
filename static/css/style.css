@@ -12,9 +12,7 @@ body::before {
 }
 @media (max-width: 512px)  and (min-resolution: 1.5dppx),
        (max-width: 1024px) and (max-resolution: 1.5dppx) {
-  body::before {
-    background-image: url('../../../static/img/bg.jpg');
-  }
+  
 }
 @media (min-width: 513px)  and (max-width: 1024px) and (min-resolution: 1.5dppx),
        (min-width: 1025px) and (max-width: 2048px) and (max-resolution: 1.5dppx)  {
@@ -33,7 +31,7 @@ body .fh-feed {
 }
 
 .fh-feed .fh-feed__posts {
-  max-width: 900px;
+  width: 900px;
   padding: 0;
   display: flex;
   width: 100%;
@@ -41,19 +39,63 @@ body .fh-feed {
   flex-shrink: 0;
 }
 
+.main-body {
+  background: white;
+  height: 100%;
+  max-width: 900px;
+}
+
+.main-flex {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  height: 100%;
+  align-items: center;
+}
+
+.gradients {
+  width: 30%;  
+  height: 100%;
+}
+
+.left-gradient {
+  background: linear-gradient(
+    to left,
+    white,
+    rgba(255, 0, 0, 0)
+  )
+}
+.right-gradient {
+  background: linear-gradient(
+    to right,
+    white,
+    rgba(255, 0, 0, 0)
+  )
+}
+
 .fh-feed.mdl-layout .mdl-layout__content {
-  padding-top: 230px;
+  padding-top: 50px;
   position: relative;
   -webkit-overflow-scrolling: touch;
 }
+
 .fh-feed .mdl-card {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: stretch;  
   min-height: 200px;
 }
+
+.fh-feed .comment-nest {  
+  border-left-color: lightgrey;
+  border-width: thin;
+  margin-left:8px;
+  width:100%;
+  border-left-style: dotted;
+}
+
 .fh-feed .mdl-card__title {
-  padding: 16px;
+  padding: 8px;
   flex-grow: 1;
 }
 .fh-feed .mdl-card__media {
@@ -315,18 +357,56 @@ body .fh-feed {
   overflow: visible;
   z-index: 10;
 }
-.fh-feed .amazing .mdl-card__title {
-  background-color: #263238;
+
+.fh-feed .amazing {
+  border-bottom-style: solid;
+  margin-bottom: 0;
+  margin-top: 0;
+  border-radius: 0;
+  border-width: thin;
+  border-color: lightgray;
+  background-color: white;
 }
+
+.submit-feed {
+  border-bottom-style: solid;
+  margin-bottom: 0;
+  margin-top: 0;
+  border-radius: 0;
+  border-width: thin;
+  border-color: black;
+  margin-bottom: 10px;
+}
+
+.fh-feed .amazing:hover{
+  background: whitesmoke;
+}
+
+.fh-feed .highlight-post {
+  border-color:black;
+}
+
 .fh-feed .minilogo {
   width: 44px;
-  height: 44px;
-  background-image: url('images/avatar.png');
+  height: 44px;  
   background-position: center;
   background-repeat: no-repeat;
   background-size: 50%;
   border-radius: 22px;
   background-color: #F5F5F5;
+}
+
+.user-bar {
+  background: white;
+  width: 100%;
+}
+
+.user-avatar {
+  width:210px;  
+}
+
+.follow-button {
+  top: 33%;
 }
 
 /* Fixes for IE 10 */
@@ -407,7 +487,7 @@ body .fh-feed {
   /* Simple hack to make the overflow happen to the left instead... */
   direction: rtl;
   order: 1;
-  width: 500px;
+  width: 100px;
   transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
       width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -465,20 +545,88 @@ body .fh-feed {
   order: 3;
 }
 
-@media (max-width: 900px) {
-  .fh-navigation-container {
+.message-input {
+  width:400px;
+}
+
+.anchor{
+  display: block;
+  height: 150; /*same height as header*/
+  margin-top: -150px; /*same height as header*/
+  visibility: hidden;
+}
+
+.expanding {
+  height: 2em;
+  width: 100%;
+  padding: 3px;
+  transition: all 0.5s ease;
+}
+
+.expanding:focus {
+  height: 8em;
+}
+
+.expanding:valid {
+  height: 8em;
+}
+
+.fh-feed {
+  width: 600px
+}
+
+.submit-form .mdl-textfield {
+  width: 100%;
+}
+
+.submit-post-button {
+  justify-content: flex-end;
+  padding-right: 10px;
+  display: none;
+  transition: all 0.5s ease;
+}
+
+.expanding:valid ~ div {
+  display: flex;
+}
+
+.expanding:focus ~ div {
+  display: flex;
+}
+
+@media (max-width: 600px) {
+  .fh-header .mdl-layout__header-row {
+    padding: 10px;
+  }
+
+  .fh-feed {
+   
+  }
+
+  .main-body {
+    background: white;
+    height: 100%;
+    max-width: 100%;
+    min-width: 0px;
+  }
+  
+  .main-flex {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    height: 100%;
+    align-items: center;
+  }
+  
+  .gradients {
+    width: 50%;  
+    height: 100%;
     display: none;
   }
 
-  .fh-title {
-    display: none !important;
+  .fh-feed.mdl-layout .mdl-layout__content {
+    padding-top:0px;
   }
+  
 
-  .fh-mobile-title {
-    display: block !important;
-    position: absolute;
-    left: calc(50% - 70px);
-    top: 12px;
-    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
 }

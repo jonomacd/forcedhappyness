@@ -1,0 +1,13 @@
+{{define "submitform"}}
+    <form class="submit-form" action='/submit' method='post'>
+        <textarea class="mdl-textfield__input message-input expanding" type="text" id="message" placeholder="Remember to be nice" name="message" required></textarea>
+        </br>
+        {{if .Sub}}<input type="hidden" name="sub" value="{{.Sub}}">{{end}}
+        {{if .ReplyTo}}<input type="hidden" name="replyto" value="{{.ReplyTo}}">{{end}}
+        <div class="submit-post-button">            
+            <div class="spb-button">
+                <input type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effec" value="Submit">
+            </div>            
+        </div>
+    </form>              
+{{end}}

@@ -36,6 +36,8 @@ func (h *RegisterHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h *RegisterHandler) post(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	name := r.Form.Get("name")
+	username := r.Form.Get("username")
+	details := r.Form.Get("details")
 	email := r.Form.Get("email")
 	password := r.Form.Get("password")
 	confirmpassword := r.Form.Get("confirmpassword")
@@ -48,6 +50,8 @@ func (h *RegisterHandler) post(w http.ResponseWriter, r *http.Request) {
 	u := domain.User{
 		Email:        email,
 		Name:         name,
+		Username:     username,
+		Details:      details,
 		RegisterDate: time.Now(),
 	}
 
@@ -62,6 +66,7 @@ func (h *RegisterHandler) post(w http.ResponseWriter, r *http.Request) {
 	err = dao.CreateUser(context.Background(), du)
 	if err != nil {
 		log.Printf("Bad user: %v", err)
+		return
 	}
 
 	err = newSession(w, r, h.ss, du.ID)
@@ -69,7 +74,7 @@ func (h *RegisterHandler) post(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Bad session: %v", err)
 	}
 
-	http.Redirect(w, r, "/", 301)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (h *RegisterHandler) get(w http.ResponseWriter, r *http.Request) {
