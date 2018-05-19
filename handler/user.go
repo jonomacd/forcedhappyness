@@ -36,6 +36,8 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 	ctx := context.Background()
 	userID, hasSession := getUserID(w, r, ss)
 
+	cursor := r.URL.Query().Get("cursor")
+
 	username, err := parth.SubSegToString(r.URL.Path, "user")
 	if err != nil {
 		log.Printf("error parsing userID %v", err)
@@ -65,15 +67,16 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 		}
 	}
 
-	posts, cursor, err := dao.ReadPostsByUser(ctx, u.ID, "", 5)
+	posts, next, err := dao.ReadPostsByUser(ctx, u.ID, cursor, 5)
 	pg := domain.UserPage{
 		User: u.User,
 		BasePage: domain.BasePage{
 			HasSession:  hasSession,
 			SessionUser: sessionUser.User,
+			Next:        next,
+			Previous:    cursor,
 		},
 		Follows: follows,
-		Cursor:  cursor,
 	}
 	for _, post := range posts {
 

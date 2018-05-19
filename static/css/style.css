@@ -625,6 +625,12 @@ body .fh-feed {
   margin-bottom: 0px;
 }
 
+.next-button {
+  display: flex;
+  justify-content: flex-end;
+  padding: 20px;
+}
+
 @media (max-width: 600px) {
   .fh-header .mdl-layout__header-row {
     padding: 10px;

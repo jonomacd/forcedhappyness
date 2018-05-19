@@ -50,7 +50,6 @@ func (post Post) FormattedDate() string {
 type PageData struct {
 	BasePage
 	Posts   []PostWithUser
-	Cursor  string
 	ReplyTo string
 	Sub     string
 }

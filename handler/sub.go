@@ -50,7 +50,8 @@ func (h *SubHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func forceTrailingSlash(w http.ResponseWriter, r *http.Request) bool {
 	if !strings.HasSuffix(r.URL.Path, "/") {
-		http.Redirect(w, r, r.URL.String()+"/", http.StatusSeeOther)
+		r.URL.Path += "/"
+		http.Redirect(w, r, r.URL.String(), http.StatusSeeOther)
 		return true
 	}
 	return false

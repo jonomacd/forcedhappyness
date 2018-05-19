@@ -40,34 +40,6 @@
 {{define "postScript"}}
     <script>
 
-    function pagePosts(cursor) {
-        fetch('/post/page?loc='+window.location.pathname+'&cursor='+cursor, {
-        method: 'get',
-        credentials: 'include',            
-        })
-        .then(function (response) {
-            if (response.status == 200) {
-                response.text().then(function(data) {
-                    // Get rid of last more button
-                    var element = document.getElementById(cursor);
-                    element.parentNode.removeChild(element);
-                    
-                    var temp = document.createElement('div');
-                    temp.innerHTML = data;
-                    temp.style.width = '100%';
-                    var elm = document.getElementById('post-div')
-                    elm.appendChild(temp);
-                });
-            }
-        })
-        .catch(function (error) {
-            var snackbarContainer = document.querySelector('#error-snackbar');
-            var data = {message: 'Error getting next page'};
-            snackbarContainer.MaterialSnackbar.showSnackbar(data);
-        });
-        return false
-    }
-
     function toggleDisplay(postID) {
         var elm = document.getElementById(postID+'-reply')
         if (elm.style.display  == 'none' || elm.style.display  == '') {
@@ -118,18 +90,15 @@
 {{end}}
 
 {{define "posts"}}
-    <div id='post-div' class="fh-feed__posts mdl-grid">
-        {{block "postsonly" .}}{{end}}
-        {{block "postScript" .}}{{end}}        
-    </div>    
-{{end}}
-
-{{define "postsonly"}}
-    {{range .Posts}}
+    <div class="fh-feed__posts mdl-grid">
+        {{range .Posts}}
             {{block "post" .}}{{end}}
-    {{end}}
-    {{if .Cursor}}
-        <a id='{{.Cursor}}' href='' onclick='return pagePosts({{.Cursor}})'>More</a>        
-    {{end}}
+        {{end}}
+        {{block "postScript" .}}{{end}}
+    </div>
+    <div class="next-button">        
+        {{if .Next}}
+            <a href='?cursor={{.Next}}' class="material-icons">navigate_next</a>
+        {{end}}
+    </div>
 {{end}}
-
