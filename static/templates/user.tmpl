@@ -11,12 +11,19 @@
             <div class="name-details">
                 <h4>{{.User.NameTitle}}</h4>
                 {{.User.Details}}
-            </div>
+            </div>   
+            <div class="user-happyness">{{block "happyness" .User}}{{end}}</div>
             {{if .HasSession | and (not $IsUser)}}
                 <div class="follow-button">
                     <button id='follow-button' onclick='toggleFollow({{.User.ID}})'class="follow-button mdl-cell--middle mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
                         {{if .Follows}}Unfollow{{else}}Follow{{end}}
                     </button>
+                </div>
+            {{end}}
+
+            {{if $IsUser}}
+                <div class="top-right-icon">
+                    <a href='/settings' class="material-icons">settings</a>
                 </div>
             {{end}}
         </div>        

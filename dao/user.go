@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"cloud.google.com/go/datastore"
 	"github.com/jonomacd/forcedhappyness/site/domain"
@@ -29,6 +30,9 @@ func CreateUser(ctx context.Context, u *User) error {
 		u.ID = newToken("u_", 15)
 	}
 
+	u.Username = strings.ToLower(u.Username)
+	u.Email = strings.ToLower(u.Email)
+
 	_, err := ReadUserByEmail(ctx, u.Email)
 	if err != datastore.ErrNoSuchEntity {
 		return ErrEmailExists
@@ -42,6 +46,59 @@ func CreateUser(ctx context.Context, u *User) error {
 	key := datastore.NameKey(KindUser, u.ID, nil)
 	_, err = ds.Put(ctx, key, u)
 	return err
+}
+
+func UpdateUser(ctx context.Context, u *User) (*User, error) {
+	tx, err := ds.NewTransaction(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	u.Username = strings.ToLower(u.Username)
+	u.Email = strings.ToLower(u.Email)
+
+	key := datastore.NameKey(KindUser, u.User.ID, nil)
+
+	current := &User{}
+	if err := tx.Get(key, current); err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	if u.PasswordHash != nil {
+		current.PasswordHash = u.PasswordHash
+	}
+	if u.Name != "" && u.Name != current.Name {
+		current.Name = u.Name
+	}
+	if u.Email != "" && u.Email != current.Email {
+		_, err := ReadUserByEmail(ctx, u.Email)
+		if err != datastore.ErrNoSuchEntity {
+			return nil, ErrEmailExists
+		}
+		current.Email = u.Email
+	}
+
+	if u.Username != "" && u.Username != current.Username {
+		_, err = ReadUserByUsername(ctx, u.Username)
+		if err != datastore.ErrNoSuchEntity {
+			return nil, ErrUsernameExists
+		}
+		current.Username = u.Username
+	}
+
+	if u.Details != "" && u.Details != current.Details {
+		current.Details = u.Details
+	}
+
+	if _, err := tx.Put(key, current); err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	if _, err = tx.Commit(); err != nil {
+		return nil, err
+	}
+	return current, nil
 }
 
 func AddFollowerToUser(ctx context.Context, userID, followUserID string) error {
@@ -142,4 +199,64 @@ func ReadUserByUsername(ctx context.Context, username string) (User, error) {
 	}
 
 	return users[0], nil
+}
+
+func updateUserPostedStatistics(ctx context.Context, p Post, userID string) error {
+	tx, err := ds.NewTransaction(ctx)
+	if err != nil {
+		return err
+	}
+
+	key := datastore.NameKey(KindUser, userID, nil)
+
+	current := &User{}
+	if err := tx.Get(key, current); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	current.PostedCount++
+	current.PostedSentiment += float64(p.Analysis.DocumentSentiment.Score)
+
+	if _, err := tx.Put(key, current); err != nil {
+		tx.Rollback()
+		return err
+	}
+	if _, err = tx.Commit(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateUserPostAttemptStatistics(ctx context.Context, user User, score float32) error {
+	tx, err := ds.NewTransaction(ctx)
+	if err != nil {
+		return err
+	}
+
+	key := datastore.NameKey(KindUser, user.ID, nil)
+
+	current := &User{}
+	if err := tx.Get(key, current); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	current.PostAttemptCount++
+	current.PostAttemptSentiment += float64(score)
+
+	current.AngryBanExpire = user.AngryBanExpire
+	current.AngryBanThreshold = user.AngryBanThreshold
+	current.AngryBanCount = user.AngryBanCount
+
+	current.TotalSentimentEMA = user.TotalSentimentEMA
+
+	if _, err := tx.Put(key, current); err != nil {
+		tx.Rollback()
+		return err
+	}
+	if _, err = tx.Commit(); err != nil {
+		return err
+	}
+	return nil
 }

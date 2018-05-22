@@ -68,13 +68,12 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 			return
 		}
-		if len(posts) == 0 && cursor == "" {
-			renderHome(w, r, ss, "all")
+		if len(posts) == 0 && len(u.Follows) == 0 {
+			http.Redirect(w, r, "/u/all", http.StatusSeeOther)
 			return
 		}
 	}
 	pg := domain.PageData{
-		Posts: []domain.PostWithUser{},
 		BasePage: &domain.BasePage{
 			HasSession: hasSession,
 			Next:       next,
@@ -82,27 +81,14 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 		},
 		Sub: sub,
 	}
-	for _, post := range posts {
-		user, err := dao.ReadUserByID(context.Background(), post.UserID)
-		if err != nil {
-			log.Printf("user read failed: %v", err)
-			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
-			return
-		}
 
-		hasLiked := false
-		if userID != "" {
-			_, err := dao.ReadLike(context.Background(), userID, post.ID)
-			hasLiked = err == nil
-		}
-		post.Post.Text = linkMentionsAndHashtags(post.Post.Text, post.Post.MentionsUsername, post.Post.Hashtags)
-		pg.Posts = append(pg.Posts, domain.PostWithUser{
-			Post:     post.Post,
-			User:     user.User,
-			HasLiked: hasLiked,
-		})
-
+	pwu, err := augmentPosts(ctx, userID, posts)
+	if err != nil {
+		log.Printf("user read failed: %v", err)
+		renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
+		return
 	}
+	pg.Posts = pwu
 
 	if len(pg.Posts) < 20 {
 		pg.Next = ""
@@ -149,4 +135,28 @@ func ReadUserMentionAndFollowPosts(ctx context.Context, u dao.User, cursor strin
 
 	return posts, cursor, nil
 
+}
+
+func augmentPosts(ctx context.Context, userID string, posts []dao.Post) ([]domain.PostWithUser, error) {
+	pwu := make([]domain.PostWithUser, len(posts))
+	for ii, _ := range posts {
+		user, err := dao.ReadUserByID(ctx, posts[ii].UserID)
+		if err != nil {
+			return nil, err
+		}
+
+		hasLiked := false
+		if userID != "" {
+			_, err := dao.ReadLike(ctx, userID, posts[ii].ID)
+			hasLiked = err == nil
+		}
+		posts[ii].Post.Text = linkMentionsAndHashtags(posts[ii].Post.Text, posts[ii].Post.MentionsUsername, posts[ii].Post.Hashtags)
+		pwu[ii] = domain.PostWithUser{
+			Post:     posts[ii].Post,
+			User:     user.User,
+			HasLiked: hasLiked,
+		}
+	}
+
+	return pwu, nil
 }

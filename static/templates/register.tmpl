@@ -7,32 +7,32 @@
                         <form action="/register" method='post'>                        
                             
                             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                <input class="mdl-textfield__input" type="text" id="name" required name="name">
+                                <input class="mdl-textfield__input" type="text" id="name" name="name" required value="{{.SessionUser.Name}}">
                                 <label class="mdl-textfield__label" for="name">Name</label>
                             </div>
                             </br>
                             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                <input class="mdl-textfield__input" type="text" id="username" required name="username">
+                                <input class="mdl-textfield__input" type="text" id="username" name="username" required value="{{.SessionUser.Username}}">
                                 <label class="mdl-textfield__label" for="name">Username</label>
                             </div>
                             </br>
                             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                <input class="mdl-textfield__input" type="text" id="email" required name="email">
+                                <input class="mdl-textfield__input" type="text" id="email" name="email" required value="{{.SessionUser.Email}}">
                                 <label class="mdl-textfield__label" for="email">Email</label>
                             </div>
                             </br>
                             <div class="mdl-textfield mdl-js-textfield">
-                                <textarea class="mdl-textfield__input" type="text" rows= "3" id="details" name="details"></textarea>
+                                <textarea class="mdl-textfield__input" type="text" rows= "3" id="details" name="details">{{.SessionUser.Details}}</textarea>
                                 <label class="mdl-textfield__label" for="details">Details about yourself</label>
                             </div>
                             </br>
                             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                <input class="mdl-textfield__input" type="password" id="password" required name="password">
+                                <input class="mdl-textfield__input" type="password" required id="password" name="password">
                                 <label class="mdl-textfield__label" for="password">Password</label>
                             </div>                            
                             </br>
                             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                <input class="mdl-textfield__input" type="password" id="confirmpassword" required name="confirmpassword">
+                                <input class="mdl-textfield__input" type="password" required id="confirmpassword" name="confirmpassword">
                                 <label class="mdl-textfield__label" for="confirmpassword">Confirm Password</label>
                             </div>                            
                             </br>

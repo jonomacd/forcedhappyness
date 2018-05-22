@@ -21,6 +21,7 @@ var (
 				templateDir + "submitform" + ext,
 				templateDir + "feed" + ext,
 				templateDir + "post" + ext,
+				templateDir + "happyness" + ext,
 			},
 		},
 		"comments": &TemplateInfo{
@@ -29,6 +30,7 @@ var (
 				templateDir + "comments" + ext,
 				templateDir + "post" + ext,
 				templateDir + "submitform" + ext,
+				templateDir + "happyness" + ext,
 			},
 		},
 		"user": &TemplateInfo{
@@ -37,6 +39,7 @@ var (
 				templateDir + "user" + ext,
 				templateDir + "post" + ext,
 				templateDir + "submitform" + ext,
+				templateDir + "happyness" + ext,
 			},
 		},
 		"login": &TemplateInfo{
@@ -54,18 +57,35 @@ var (
 			Name:      "register",
 			filepaths: []string{templateDir + "register" + ext},
 		},
+		"settings": &TemplateInfo{
+			Name:      "settings",
+			filepaths: []string{templateDir + "settings" + ext},
+		},
 		"postonly": &TemplateInfo{
 			Name:   "postonly",
 			noBase: true,
 			filepaths: []string{
 				templateDir + "post" + ext,
 				templateDir + "submitform" + ext,
+				templateDir + "happyness" + ext,
 			},
 		},
 		"error": &TemplateInfo{
 			Name: "error",
 			filepaths: []string{
 				templateDir + "error" + ext,
+			},
+		},
+		"angryban": &TemplateInfo{
+			Name: "angryban",
+			filepaths: []string{
+				templateDir + "angryban" + ext,
+			},
+		},
+		"welcome": &TemplateInfo{
+			Name: "welcome",
+			filepaths: []string{
+				templateDir + "welcome" + ext,
 			},
 		},
 	}

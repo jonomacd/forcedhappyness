@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/jonomacd/forcedhappyness/site/dao"
 	"github.com/jonomacd/forcedhappyness/site/domain"
+	"github.com/jonomacd/forcedhappyness/site/sentiment"
 	"github.com/jonomacd/forcedhappyness/site/tmpl"
 )
 
@@ -74,8 +75,37 @@ func (h *SubmitHandler) post(w http.ResponseWriter, r *http.Request) {
 	parent := r.Form.Get("replyto")
 
 	url := "/"
-	if sub != "" {
-		url += "u/" + sub + "/"
+
+	u, err := dao.ReadUserByID(ctx, userID)
+	if err != nil {
+		log.Printf("unable to read user %s: %v", userID, err)
+		return
+	}
+
+	postSentiment, err := sentiment.GetNLP(ctx, text)
+	if err != nil {
+		log.Printf("unable to read sentiment %s: %v", userID, err)
+		return
+	}
+
+	allowed, message, err := sentiment.CheckPost(ctx, u.User, postSentiment)
+	if err != nil {
+		log.Printf("unable check post sentiment %s: %v", userID, err)
+		return
+	}
+
+	if !allowed {
+		err := tmpl.GetTemplate("angryban").Execute(w, &angryban{
+			Message: message,
+			BasePage: &domain.BasePage{
+				HasSession: hasSession,
+			},
+		})
+		if err != nil {
+			log.Printf("Template failed: %v", err)
+		}
+
+		return
 	}
 
 	topParent := ""
@@ -92,11 +122,6 @@ func (h *SubmitHandler) post(w http.ResponseWriter, r *http.Request) {
 		}
 		sub = p.Sub
 		url += "post/" + topParent + "#" + parent
-	}
-
-	sentiment, err := domain.GetNLP(ctx, text)
-	if err != nil {
-		return
 	}
 
 	mentions := parseMentions(text)
@@ -125,7 +150,7 @@ func (h *SubmitHandler) post(w http.ResponseWriter, r *http.Request) {
 			IsReply:          isReply,
 			Parent:           parent,
 			TopParent:        topParent,
-			Analysis:         sentiment,
+			Analysis:         postSentiment,
 			Mentions:         mentionsID,
 			MentionsUsername: mentionsUsername,
 			Hashtags:         parseHashtags(text),
@@ -149,4 +174,9 @@ func parseMentions(text string) []string {
 
 func parseHashtags(text string) []string {
 	return mention.GetTagsAsUniqueStrings('#', text, terminators...)
+}
+
+type angryban struct {
+	*domain.BasePage
+	Message string
 }

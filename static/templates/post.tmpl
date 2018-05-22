@@ -2,34 +2,34 @@
     <div name="{{.Post.ID}}" class="mdl-card {{if .Highlight}}highlight-post{{end}} amazing mdl-cell mdl-cell--12-col">
         <a class='anchor' name="{{.Post.ID}}"></a>
         <div class="mdl-card__title mdl-color-text--grey-600">
-            <p class="quote">
-                {{.Post.Text}}
-            </p>                               
+            <p class="quote">{{.Post.Text}}</p>                               
         </div>
-        <div class="mdl-card__supporting-text meta mdl-color-text--grey-600">    
+        <div class="mdl-card__supporting-text meta {{if .Post.AngryPercent}}angrytext{{else}}happytext{{end}}">    
             <div class="minilogo">
                 <a href='/user/{{.User.Username}}'><img src="{{.User.AvatarUrl}}" height="44" width="44" onerror="this.src='/static/img/unknown-user.png'"/></a>
             </div>
             <div>
-                <a href='/user/{{.User.Username}}'><strong>{{.User.Username}}</strong></a>
+                <a href='/user/{{.User.Username}}'><strong>{{.User.Username}}</strong></a>                
                 <a href='/post/{{.Post.ID}}#{{.Post.ID}}'><span>{{.Post.FormattedDate}}</span></a>
                 {{if .Post.Sub}}<div><a href="/u/{{.Post.Sub}}/">/u/{{.Post.Sub}}</a></div>{{end}}
-            </div>        
-            <a  href="" id='like-{{.Post.ID}}' onclick="return toggleLike({{.Post.ID}})" style='text-decoration: none;' class="material-icons">{{if .HasLiked}}favorite{{else}}favorite_border{{end}}</a>
-            <span id='likebadge-{{.Post.ID}}' class="mdl-badge" data-badge="{{.Post.Likes}}"></span>
+            </div>   
+            <div class="action-happyness">
+                {{block "happyness" .Post}}{{end}}
+                <div class="post-actions">
+                    <div>
+                        <a  href="" id='like-{{.Post.ID}}' onclick="return toggleLike({{.Post.ID}})" style='text-decoration: none;' class="material-icons">{{if .HasLiked}}favorite{{else}}favorite_border{{end}}</a>
+                        <span id='likebadge-{{.Post.ID}}' class="mdl-badge" data-badge="{{.Post.Likes}}"></span>
+                    </div>
 
-            <a id='reply-{{.Post.ID}}' href='/post/{{.Post.ID}}#{{.Post.ID}}' style='text-decoration: none;' class="material-icons">message</a>
-            <a  href="/post/{{.Post.ID}}#{{.Post.ID}}"><span id='replybadge-{{.Post.ID}}' class="mdl-badge" data-badge="{{.Post.ReplyCount}}"></span></a>
+                    <div>
+                        <a id='reply-{{.Post.ID}}' href='/post/{{.Post.ID}}#{{.Post.ID}}' style='text-decoration: none;' class="material-icons">message</a>
+                        <a  href="/post/{{.Post.ID}}#{{.Post.ID}}"><span id='replybadge-{{.Post.ID}}' class="mdl-badge" data-badge="{{.Post.ReplyCount}}"></span></a>
+                    </div>
 
-            <a href="" onclick="return toggleDisplay({{.Post.ID}})" style='text-decoration: none;' class="material-icons">reply</a>
-
-            {{if .Post.Analysis}}
-            {{if .Post.Analysis.DocumentSentiment}}
-            <div style="margin: 10px;">
-                <span>Happyness: {{.Post.Analysis.DocumentSentiment.Score}}</span>
+                    <div><a href="" onclick="return toggleDisplay({{.Post.ID}})" style='text-decoration: none;' class="material-icons">reply</a></div>
+                </div>                
             </div>
-            {{end}}
-            {{end}}
+            
         </div>
     </div>  
     <div id="{{.Post.ID}}-reply" class="mdl-card mdl-cell mdl-cell--12-col post-reply">                 
@@ -98,7 +98,7 @@
     </div>
     <div class="next-button">        
         {{if .Next}}
-            <a href='?cursor={{.Next}}' class="material-icons">navigate_next</a>
+            <a style='color:black;text-decoration:none;' href='?cursor={{.Next}}' class="material-icons">navigate_next</a>
         {{end}}
     </div>
 {{end}}

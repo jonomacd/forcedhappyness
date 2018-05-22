@@ -1,0 +1,22 @@
+{{define "body"}}
+<div class="mdl-layout mdl-js-layout">
+    <main class="mdl-layout__content">
+        <div class="post-register-box">
+            <h2 style='text-align: center;'>Welcome {{.SessionUser.Username}}</h2>
+            <h3 style='text-align: center;'>Just a Brief Explaination</h3>
+            <div style='margin: auto;width: 100%;text-align: center;'>
+                <i class="material-icons">details</i>
+            </div>
+            <h4>This is a social network who's goal is positivity. It tries to understand your sentiment and will block you if you are too angry, cynical, mean, etc.</h4>
+            <h4>That means, <b>I am going to censor you.</b> It is what the site is about. Expect it to happen. Potentially very often. If you don't like that then this place isn't for you. </h4>
+            <h4><b>The sentiment analysis is going to be wrong. Often.</b> You will say something benign and it will think you're the devil. Meanwhile, someone else will say something horrible and it will be let through. Sorry but that is the nature of computers trying to understand how us crazy humans speak.</h4>
+            <p>I'm not a business. I'm just one guy. I built this in my spare time because the cynicism on the internet was making me crazy. It is going to break. It is going to be frusterating to use. It's just an experiment. I hope you can stay positive about it.</p>
+            <p>This is hosted on Google Cloud Platform. Your data is encrypted at rest and protected by Googles tools. It should be pretty safe. Passwords are stored hashed and salted (bcrypt) so even if there is a breach they will be hard to crack. That said I am but one man working in his spare time. Fair warning.</p>
+            <p>What about Ads and tracking and all that... Who know? Right now I have no ads and only bare bones google analytics for counting views. But servers cost money which comes out of my pocket. One day maybe I'll have ads. I will say that I will <b>never</b> sell your data or use it for something nefarious. Likely just run of the mill internet ads no different than any other site out there.</p>
+            <div style='margin: auto;width: 100%;text-align: center;'>
+                <a href='/'><h4>Come in and say something nice?</h4></a>
+            </div>
+        </div>        
+    </main>
+</div>
+{{end}}

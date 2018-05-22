@@ -1,0 +1,12 @@
+{{define "happyness"}}
+    <div class="happyness">    
+        <span class='happy-side-span'>
+            <div class="happy-side" style="width:{{.HappyPercent}}%"></div>
+        </span>
+        {{if .AngryPercent}}
+        <span class='angry-side-span'>
+            <div class="angry-side" style="width:{{.AngryPercent}}%"></div>
+        </span>
+        {{end}}
+    </div>
+{{end}}

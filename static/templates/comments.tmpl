@@ -7,15 +7,34 @@
         </main>
     </div>
     {{block "postScript" .}}{{end}}
+    {{block "commentscripts" .}}{{end}}
 {{end}}
 
 {{define "postAndComments"}}
     {{block "post" .}}{{end}}
     {{if .Comments}}
-    <div class='comment-nest'>    
-    {{range .Comments}}
-        {{block "postAndComments" .}}{{end}}
+        <a style='color:black;text-decoration:none;' id='arrow-{{.Post.ID}}' href='' onclick="return toggleNest({{.Post.ID}});" class='material-icons'>arrow_drop_down</a> 
+        <div id='comment-block-{{.Post.ID}}' class='comment-nest'>           
+        {{range .Comments}}
+            {{block "postAndComments" .}}{{end}}
+        {{end}}
+        </div>    
     {{end}}
-    </div>    
-    {{end}}
+{{end}}
+
+{{define "commentscripts"}}
+    <script>
+        function toggleNest(id) {
+            var arrow = document.getElementById('arrow-'+id);
+            var commentblock = document.getElementById('comment-block-'+id);
+            if (arrow.innerText == 'arrow_drop_down') {
+                arrow.innerText = 'arrow_right'                
+                commentblock.style.display = 'none';
+            } else {
+                arrow.innerText = 'arrow_drop_down'                
+                commentblock.style.display = 'block';
+            }
+            return false;
+        }
+    </script>
 {{end}}

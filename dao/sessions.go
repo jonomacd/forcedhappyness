@@ -82,6 +82,7 @@ func (s *DatastoreStore) Get(r *http.Request, name string) (*sessions.Session,
 func (s *DatastoreStore) New(r *http.Request, name string) (*sessions.Session,
 	error) {
 	session := sessions.NewSession(s, name)
+	session.Options.MaxAge = 60 * 60 * 24 * 365 * 4 // 4 years in seconds
 	session.IsNew = true
 	var err error
 	if c, errCookie := r.Cookie(name); errCookie == nil {

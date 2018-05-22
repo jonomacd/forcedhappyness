@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"log"
 	"strings"
 	"time"
 
@@ -17,6 +18,18 @@ type User struct {
 	RegisterDate time.Time
 	Avatar       string
 	Follows      []string
+
+	PostedCount     int
+	PostedSentiment float64
+
+	PostAttemptCount     int
+	PostAttemptSentiment float64
+
+	TotalSentimentEMA float64
+
+	AngryBanExpire    time.Time
+	AngryBanThreshold float64
+	AngryBanCount     int
 }
 
 func (u User) AvatarUrl() string {
@@ -31,6 +44,39 @@ func (u User) AvatarUrl() string {
 
 func (u User) NameTitle() string {
 	return strings.Title(u.Name)
+}
+
+func (u User) HappyPercent() int {
+
+	sentiment := u.OverallSentiment()
+	if sentiment > 0 {
+		return int(sentiment * 100)
+	}
+
+	return 0
+}
+
+func (u User) AngryPercent() int {
+	sentiment := u.OverallSentiment()
+	if sentiment < 0 {
+		return 100 + int(sentiment*100)
+	}
+
+	return 0
+}
+
+func (u User) OverallSentiment() float64 {
+	return u.TotalSentimentEMA
+}
+
+func (u User) CalculatSentimentEMA(new float64) float64 {
+	log.Printf("User %#v", u)
+
+	if u.PostAttemptCount+u.PostedCount == 0 {
+		log.Printf("returning new")
+		return new
+	}
+	return ((new - u.TotalSentimentEMA) * 0.2) + u.TotalSentimentEMA
 }
 
 type UserPage struct {

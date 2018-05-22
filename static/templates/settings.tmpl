@@ -1,0 +1,47 @@
+{{define "body"}}
+    <div class="fh-feed mdl-layout mdl-js-layout has-drawer is-upgraded">
+        <main class="mdl-layout__content">
+            <div class="fh-feed__posts mdl-grid">
+                <div class="mdl-card amazing mdl-cell mdl-cell--12-col">
+                    <div class="mdl-card--border">
+                        <form action="/settings" method='post'>                        
+                            
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                <input class="mdl-textfield__input" type="text" id="name" name="name" value="{{.SessionUser.Name}}">
+                                <label class="mdl-textfield__label" for="name">Name</label>
+                            </div>
+                            </br>
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                <input class="mdl-textfield__input" type="text" id="username" name="username" value="{{.SessionUser.Username}}">
+                                <label class="mdl-textfield__label" for="name">Username</label>
+                            </div>
+                            </br>
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                <input class="mdl-textfield__input" type="text" id="email" name="email" value="{{.SessionUser.Email}}">
+                                <label class="mdl-textfield__label" for="email">Email</label>
+                            </div>
+                            </br>
+                            <div class="mdl-textfield mdl-js-textfield">
+                                <textarea class="mdl-textfield__input" type="text" rows= "3" id="details" name="details">{{.SessionUser.Details}}</textarea>
+                                <label class="mdl-textfield__label" for="details">Details about yourself</label>
+                            </div>
+                            </br>
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                <input class="mdl-textfield__input" type="password" id="password" name="password">
+                                <label class="mdl-textfield__label" for="password">Password</label>
+                            </div>                            
+                            </br>
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                <input class="mdl-textfield__input" type="password" id="confirmpassword" name="confirmpassword">
+                                <label class="mdl-textfield__label" for="confirmpassword">Confirm Password</label>
+                            </div>                            
+                            </br>
+                            
+                            <input type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effec" value="Update">
+                        </form>                
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>    
+{{end}}

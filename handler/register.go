@@ -34,6 +34,13 @@ func (h *RegisterHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RegisterHandler) post(w http.ResponseWriter, r *http.Request) {
+
+	_, hasSession := getUserID(w, r, h.ss)
+	if hasSession {
+		renderError(w, "Good news! You already have an account.", hasSession)
+		return
+	}
+
 	r.ParseForm()
 	name := r.Form.Get("name")
 	username := r.Form.Get("username")
@@ -42,20 +49,29 @@ func (h *RegisterHandler) post(w http.ResponseWriter, r *http.Request) {
 	password := r.Form.Get("password")
 	confirmpassword := r.Form.Get("confirmpassword")
 
-	if password != confirmpassword {
-		log.Printf("non matching passwords")
-		tmpl.GetTemplate("register").Execute(w, domain.BasePage{
-			ErrorToast: "Whoops, those passwords do not match",
-		})
-		return
-	}
-
 	u := domain.User{
 		Email:        email,
 		Name:         name,
 		Username:     username,
 		Details:      details,
 		RegisterDate: time.Now(),
+	}
+
+	if password != confirmpassword {
+		log.Printf("non matching passwords")
+		tmpl.GetTemplate("register").Execute(w, domain.BasePage{
+			ErrorToast:  "Whoops, those passwords do not match",
+			SessionUser: u,
+		})
+		return
+	}
+
+	if password != "" && len(password) < 4 {
+		tmpl.GetTemplate("register").Execute(w, domain.BasePage{
+			ErrorToast:  "Come on... You know that password is too short.",
+			SessionUser: u,
+		})
+		return
 	}
 
 	bb, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -73,7 +89,8 @@ func (h *RegisterHandler) post(w http.ResponseWriter, r *http.Request) {
 
 		if err == dao.ErrEmailExists || err == dao.ErrUsernameExists {
 			tmpl.GetTemplate("register").Execute(w, domain.BasePage{
-				ErrorToast: "Drat, " + err.Error(),
+				ErrorToast:  "Drat, " + err.Error(),
+				SessionUser: u,
 			})
 			return
 		}
@@ -90,11 +107,16 @@ func (h *RegisterHandler) post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/welcome", http.StatusSeeOther)
 }
 
 func (h *RegisterHandler) get(w http.ResponseWriter, r *http.Request) {
 	_, ses := getUserID(w, r, h.ss)
+	if ses {
+		renderError(w, "Good news! You already have an account.", ses)
+		return
+	}
+
 	err := tmpl.GetTemplate("register").Execute(w, domain.BasePage{
 		HasSession: ses,
 	})

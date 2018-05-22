@@ -47,65 +47,47 @@ type PostWithComments struct {
 func (p Post) FormattedDate() string {
 	since := time.Since(p.Date)
 
-	ss := ""
-	hours := int(since.Hours())
-	if hours > 0 {
-		days := int(hours / 24)
-		if days > 0 {
-			years := int(days / 365)
-			if years > 0 {
-				s := ""
-				if years > 1 {
-					s = "s"
-				}
-				ss += fmt.Sprintf("%v year%s ", years, s)
-			}
-			s := ""
-			if years > 1 {
-				s = "s"
-			}
-			daysp := days
-			if years > 0 {
-				daysp %= years * 365
-			}
-			ss += fmt.Sprintf("%v day%s ", daysp, s)
-			if years > 0 {
-				return ss + "ago"
-			}
-		}
-		s := ""
-		if days > 1 {
-			s = "s"
-		}
-		hoursp := hours
-		if days > 0 {
-			hoursp %= days * 24
-		}
-		ss += fmt.Sprintf("%v hour%s ", hoursp, s)
-		if days > 0 {
-			return ss + "ago"
+	if since < time.Minute*5 {
+		return "Just Now"
+	}
+
+	if since < time.Hour {
+		return fmt.Sprintf("%vm", int(since.Minutes()))
+	}
+
+	if since < time.Hour*24 {
+		return fmt.Sprintf("%vh", int(since.Hours()))
+	}
+
+	if since < time.Hour*24*30*365 {
+		return p.Date.Format("Jan 2")
+	}
+
+	return p.Date.Format("Jan 2 2006")
+}
+
+func (p Post) HappyPercent() int {
+	percent := 0
+	if p.Analysis != nil && p.Analysis.DocumentSentiment != nil {
+		score := p.Analysis.DocumentSentiment.Score
+		if score > 0 {
+			percent = int(score * 100)
 		}
 	}
 
-	minutes := int(since.Minutes())
-	minutesp := minutes
-	if hours > 0 {
-		minutesp %= hours * 60
-	}
-	if minutes > 0 {
-		s := ""
-		if minutes > 1 {
-			s = "s"
+	return percent
+}
+
+func (p Post) AngryPercent() int {
+	percent := 0
+	if p.Analysis != nil && p.Analysis.DocumentSentiment != nil {
+		score := p.Analysis.DocumentSentiment.Score
+		if score < 0 {
+			percent = 100 - int(score*-100)
 		}
-		ss += fmt.Sprintf("%v minute%s ago", minutesp, s)
-		return ss
 	}
 
-	sec := int(since.Seconds())
-	if minutes != 0 {
-		sec %= minutes
-	}
-	return fmt.Sprintf("%v seconds ago", sec)
+	return percent
 }
 
 type PageData struct {

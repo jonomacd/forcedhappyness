@@ -74,7 +74,7 @@ body .fh-feed {
 }
 
 .fh-feed.mdl-layout .mdl-layout__content {
-  padding-top: 50px;
+  padding-top: 25px;
   position: relative;
   -webkit-overflow-scrolling: touch;
 }
@@ -89,9 +89,11 @@ body .fh-feed {
 .fh-feed .comment-nest {  
   border-left-color: lightgrey;
   border-width: thin;
-  margin-left:8px;
+  padding-left:8px;
   width:100%;
   border-left-style: dotted;
+  box-sizing: border-box;
+  transition: all 0.5s ease;
 }
 
 .fh-feed .mdl-card__title {
@@ -581,6 +583,10 @@ body .fh-feed {
   height: 8em;
 }
 
+.submit-form {
+  margin: 8px;
+}
+
 .submit-form .mdl-textfield {
   width: 100%;
 }
@@ -626,16 +632,107 @@ body .fh-feed {
   display: none;
   min-height: 0px;
   transition: all 0.5s ease;
+  margin: 8px;
 }
 
 .quote {
   margin-bottom: 0px;
+  white-space: pre-wrap;
 }
 
 .next-button {
   display: flex;
   justify-content: flex-end;
   padding: 20px;
+}
+
+.top-right-icon {
+  position: absolute;
+  top: 30;
+  right: 0;
+}
+
+.top-right-icon a {
+  text-decoration: none;
+  color: black;
+}
+
+.action-happyness {
+  margin-left:auto;
+  width: 33%;
+}
+
+.action-happyness .post-actions {
+  display:flex;  
+  flex-direction: row;
+  justify-content:space-evenly;
+  width: 100%;
+}
+
+.happyness {
+  height: 5px;
+  width: 100%; 
+  border: thin solid grey; 
+  position: relative;
+  background-color: white;
+  margin-bottom: 4px;
+}
+.happyness .happy-side-span {  
+  position:absolute;
+  width:100%;
+  height: 5px;
+  top: 0;
+  right: 0;
+  left:0;
+}
+.happyness .happy-side {    
+  background-color: green;
+  height: 100%;  
+}
+
+.happyness .angry-side-span {  
+  position: absolute;
+  width: 100%;
+  height: 5px;
+  top: 0;
+  right: 0;
+  left:0;
+  background-color:red;
+}
+
+.happyness .angry-side {  
+  background-color: white;
+  height: 100%;  
+}
+
+.user-happyness {
+  margin-top: 15px;
+  width: 100%;
+}
+
+.mdl-card__supporting-text.happytext a {
+  color:green;
+}
+
+.mdl-card__supporting-text.angrytext a {
+  color:red;
+}
+
+.mdl-card__supporting-text.angrytext .mdl-badge[data-badge]:after {
+  background:red;
+}
+
+.mdl-card__supporting-text.happytext .mdl-badge[data-badge]:after {
+  background:green;
+}
+
+.post-register-box {
+  height: 100%;
+  padding: 30px;
+}
+
+.fh-header .mdl-textfield__input {
+  color: black;
 }
 
 @media (max-width: 600px) {
@@ -667,5 +764,9 @@ body .fh-feed {
     padding-top:0px;
   }
   
+  .action-happyness {
+    margin-left:auto;
+    width: 50%;
+  }
 
 }
