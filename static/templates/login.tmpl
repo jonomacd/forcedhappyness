@@ -6,7 +6,7 @@
                 <div class="mdl-cell mdl-cell--4-col">
                     <img src="/static/img/unknown-user.png" height="150" width="150"/>
                 </div>
-                <div class="mdl-cell mdl-cell--8-col">
+                <div class="mdl-cell mdl-cell--8-col">                    
                     <form action="/login?redirect={{.Redirect}}" method='post'>                        
                         
                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
@@ -23,7 +23,7 @@
                         <input type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effec" value="Login">
                         <a style="margin: 25px;" href='/register'>No Account? Sign Up Here</a>
                     </form>                                                    
-                </div>
+                </div>                                                                                      
                 {{if .Error}}                    
                     <div class="mdl-cell mdl-color-text--red-600 mdl-cell--2-col">                        
                         <div>
@@ -32,7 +32,54 @@
                     </div>
                 {{end}}
             </div>
+            <div class='alternate-sign-in'>
+                <div>Or</div>                                
+                <div id='google-sign-in'></div>      
+            </div>
         </div>
     </main>
 </div>
+
+<meta name="google-signin-client_id" content="YOUR_CLIENT_ID.apps.googleusercontent.com">
+<script>
+    function onSignIn(googleUser) {
+        var profile = googleUser.getBasicProfile();                        
+        
+        var id_token = googleUser.getAuthResponse().id_token;
+
+        fetch('/register/google?redirect={{.Redirect}}', {
+            method: 'post',            
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            },
+            body: JSON.stringify({
+                id_token: id_token,
+                name: profile.getName(),
+                avatar: profile.getImageUrl(),
+            })
+        })
+        .then(function (response) {
+            if (response.status == 200) {
+                // don't really need to do anything I guess...            
+            }
+        })
+        .catch(function (error) {
+            var snackbarContainer = document.querySelector('#error-snackbar');
+            var data = {message: 'Problem signing in with Google'};
+            snackbarContainer.MaterialSnackbar.showSnackbar(data);
+        });
+    }
+
+    function renderButton() {
+        gapi.signin2.render('google-sign-in', {                
+            'scope': 'profile email',
+            'width': 240,
+            'height': 50,
+            'longtitle': true,
+            'theme': 'dark',
+            'onsuccess': onSignIn                           
+        });
+    }
+</script>
+<script src="https://apis.google.com/js/platform.js?onload=renderButton" async defer></script>
 {{end}}

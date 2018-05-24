@@ -45,6 +45,17 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 		return
 	}
 
+	if username == "me" {
+		sessionUser, err := dao.ReadUserByID(ctx, userID)
+		if err != nil {
+			log.Printf("error reading user %v", err)
+			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
+			return
+		}
+		http.Redirect(w, r, "/user/"+sessionUser.Username, http.StatusSeeOther)
+		return
+	}
+
 	u, err := dao.ReadUserByUsername(context.Background(), username)
 	if err != nil {
 
@@ -75,7 +86,7 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 		}
 	}
 
-	posts, next, err := dao.ReadPostsByUser(ctx, u.ID, cursor, 5)
+	posts, next, err := dao.ReadPostsByUser(ctx, u.ID, cursor, 20)
 	pg := domain.UserPage{
 		User: u.User,
 		BasePage: &domain.BasePage{

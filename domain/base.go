@@ -11,8 +11,9 @@ type BasePage struct {
 	Next     string
 	Previous string
 
-	Error      string
-	ErrorToast string
+	Error       string
+	ErrorToast  string
+	QueryParams map[string]string
 }
 
 func (bp *BasePage) SetErrorMessage(err string) {

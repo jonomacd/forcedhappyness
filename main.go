@@ -30,6 +30,7 @@ func registerHandlers() {
 
 	http.Handle("/", handler.NewHomeFeedHandler(sessionStore))
 	http.Handle("/u/", handler.NewSubHandler(sessionStore))
+	http.Handle("/sub", handler.NewSubCRUDHandler(sessionStore))
 	http.Handle("/post/", handler.NewPostHandler(sessionStore))
 	http.Handle("/settings", handler.NewSettingsHandler(sessionStore))
 	http.Handle("/user/", handler.NewUserHandler(sessionStore))
@@ -37,6 +38,7 @@ func registerHandlers() {
 	http.Handle("/reply/", handler.NewReplyHandler(sessionStore))
 	http.Handle("/login", handler.NewLoginHandler(sessionStore))
 	http.Handle("/register", handler.NewRegisterHandler(sessionStore))
+	http.Handle("/register/google", handler.NewGoogleRegisterHandler(sessionStore))
 	http.Handle("/like", handler.NewLikeHandler(sessionStore))
 	http.Handle("/follow", handler.NewFollowHandler(sessionStore))
 	http.Handle("/welcome", handler.NewWelcomeHandler(sessionStore))

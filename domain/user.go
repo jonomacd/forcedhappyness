@@ -14,9 +14,9 @@ type User struct {
 	Name         string
 	Username     string
 	Email        string
-	Details      string
+	Details      string `datastore:",noindex"`
 	RegisterDate time.Time
-	Avatar       string
+	Avatar       string `datastore:",noindex"`
 	Follows      []string
 
 	PostedCount     int
@@ -28,7 +28,7 @@ type User struct {
 	TotalSentimentEMA float64
 
 	AngryBanExpire    time.Time
-	AngryBanThreshold float64
+	AngryBanThreshold float64 `datastore:",noindex"`
 	AngryBanCount     int
 }
 

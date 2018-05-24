@@ -26,9 +26,14 @@ func (h *SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	ctx := context.Background()
 	userID, hasSession := getUserID(w, r, h.ss)
+
 	tag := r.URL.Query().Get("value")
+	params := map[string]string{}
 	if tag == "" {
 		tag = r.URL.Query().Get("tag")
+		params["tag"] = tag
+	} else {
+		params["value"] = tag
 	}
 
 	log.Printf("Searching: %v", tag)
@@ -39,9 +44,10 @@ func (h *SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	pg := domain.PageData{
 		BasePage: &domain.BasePage{
-			HasSession: hasSession,
-			Next:       next,
-			Previous:   cursor,
+			HasSession:  hasSession,
+			Next:        next,
+			Previous:    cursor,
+			QueryParams: params,
 		},
 	}
 

@@ -2,11 +2,15 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
+	oauth2 "google.golang.org/api/oauth2/v2"
 
 	"github.com/gorilla/sessions"
 	"github.com/jonomacd/forcedhappyness/site/dao"
@@ -125,4 +129,111 @@ func (h *RegisterHandler) get(w http.ResponseWriter, r *http.Request) {
 		renderError(w, "Whoops, There was a problem trying to build this page", ses)
 		return
 	}
+}
+
+type GoogleRegisterHandler struct {
+	ss sessions.Store
+}
+
+func NewGoogleRegisterHandler(ss sessions.Store) *GoogleRegisterHandler {
+	return &GoogleRegisterHandler{
+		ss: ss,
+	}
+}
+
+type googleIdToken struct {
+	IdToken string `json:"id_token"`
+	Name    string `json:"name"`
+	Avatar  string `json:"avatar"`
+}
+
+func (h *GoogleRegisterHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+	bb, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close()
+	git := &googleIdToken{}
+	err = json.Unmarshal(bb, git)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	info, err := verifyIdToken(git.IdToken)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	u, err := dao.ReadUserByEmail(ctx, info.Email)
+	if err != nil && err != dao.ErrNotFound {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err == dao.ErrNotFound {
+		// User Not Found, So let's create one
+		du := &dao.User{
+			User: domain.User{
+				Email:        info.Email,
+				Name:         git.Name,
+				Username:     strings.Replace(git.Name, "", " ", -1),
+				Avatar:       git.Avatar,
+				RegisterDate: time.Now(),
+			},
+			SignInMethod: "google",
+		}
+
+		err = dao.CreateUser(ctx, du)
+		if err != nil {
+			if err == dao.ErrEmailExists || err == dao.ErrUsernameExists {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			log.Printf("Bad user: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		err = newSession(w, r, h.ss, du.ID)
+		if err != nil {
+			log.Printf("Bad session: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "/welcome", http.StatusSeeOther)
+	} else {
+		// User is found. Let's set up a session.
+		err = newSession(w, r, h.ss, u.ID)
+		if err != nil {
+			log.Printf("Bad session: %v", err)
+			renderError(w, "Whoops, There was a problem trying to build this page", false)
+			return
+		}
+		redirect := r.Form.Get("redirect")
+		if redirect == "" {
+			redirect = "/"
+		}
+
+		http.Redirect(w, r, redirect, http.StatusSeeOther)
+	}
+
+}
+
+var httpClient = &http.Client{}
+
+func verifyIdToken(idToken string) (*oauth2.Tokeninfo, error) {
+	oauth2Service, err := oauth2.New(httpClient)
+	tokenInfoCall := oauth2Service.Tokeninfo()
+	tokenInfoCall.IdToken(idToken)
+	tokenInfo, err := tokenInfoCall.Do()
+	if err != nil {
+		return nil, err
+	}
+	return tokenInfo, nil
 }

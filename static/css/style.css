@@ -370,12 +370,7 @@ body .fh-feed {
   background-color: white;
 }
 
-.submit-feed {
-  border-bottom-style: solid;  
-  margin-top: 0;
-  border-radius: 0;
-  border-width: thin;
-  border-color: black;
+.submit-feed {  
   margin-bottom: 10px;
   padding-left: 15px;
   padding-right: 15px;
@@ -499,7 +494,7 @@ body .fh-feed {
   /* Simple hack to make the overflow happen to the left instead... */
   direction: rtl;
   order: 1;
-  width: 100px;
+  width: 125px;
   transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
       width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -517,6 +512,7 @@ body .fh-feed {
   line-height: 68px;
   background-color: transparent !important;
   border-bottom: 4px solid transparent;
+  padding: 0 6px;
 }
 
 .fh-navigation .mdl-navigation__link:hover {
@@ -640,6 +636,10 @@ body .fh-feed {
   white-space: pre-wrap;
 }
 
+.sub-description {
+  white-space: pre-wrap;
+}
+
 .next-button {
   display: flex;
   justify-content: flex-end;
@@ -659,14 +659,14 @@ body .fh-feed {
 
 .action-happyness {
   margin-left:auto;
-  width: 33%;
+  width: 45%;
 }
 
 .action-happyness .post-actions {
   display:flex;  
   flex-direction: row;
   justify-content:space-evenly;
-  width: 100%;
+  width: 85%;
 }
 
 .happyness {
@@ -735,6 +735,42 @@ body .fh-feed {
   color: black;
 }
 
+.reg-form{
+  display:flex;
+  align-items: center;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+}
+
+.alternate-sign-in {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 75px;
+  padding: 10px;
+}
+
+.sub-claim-form {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.sub-claim-title {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+.sub-details {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.sub-claim-form .mdl-textfield {
+  width: 100%;
+}
+
 @media (max-width: 600px) {
   .fh-header .mdl-layout__header-row {
     padding: 10px;
@@ -767,6 +803,10 @@ body .fh-feed {
   .action-happyness {
     margin-left:auto;
     width: 50%;
+  }
+
+  .action-happyness .post-actions {    
+    width: 100%;
   }
 
 }

@@ -4,44 +4,94 @@
             <div class="fh-feed__posts mdl-grid">
                 <div class="mdl-card amazing mdl-cell mdl-cell--12-col">
                     <div class="mdl-card--border">
-                        <form action="/register" method='post'>                        
-                            
-                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                <input class="mdl-textfield__input" type="text" id="name" name="name" required value="{{.SessionUser.Name}}">
-                                <label class="mdl-textfield__label" for="name">Name</label>
+                        <div class='reg-form'>
+                            <form action="/register" method='post'>                        
+                                
+                                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                    <input class="mdl-textfield__input" type="text" id="name" name="name" required value="{{.SessionUser.Name}}">
+                                    <label class="mdl-textfield__label" for="name">Name</label>
+                                </div>
+                                </br>
+                                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                    <input class="mdl-textfield__input" type="text" id="username" name="username" required value="{{.SessionUser.Username}}">
+                                    <label class="mdl-textfield__label" for="name">Username</label>
+                                </div>
+                                </br>
+                                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                    <input class="mdl-textfield__input" type="text" id="email" name="email" required value="{{.SessionUser.Email}}">
+                                    <label class="mdl-textfield__label" for="email">Email</label>
+                                </div>
+                                </br>
+                                <div class="mdl-textfield mdl-js-textfield">
+                                    <textarea class="mdl-textfield__input" type="text" rows= "3" id="details" name="details">{{.SessionUser.Details}}</textarea>
+                                    <label class="mdl-textfield__label" for="details">Details about yourself</label>
+                                </div>
+                                </br>
+                                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                    <input class="mdl-textfield__input" type="password" required id="password" name="password">
+                                    <label class="mdl-textfield__label" for="password">Password</label>
+                                </div>                            
+                                </br>
+                                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                    <input class="mdl-textfield__input" type="password" required id="confirmpassword" name="confirmpassword">
+                                    <label class="mdl-textfield__label" for="confirmpassword">Confirm Password</label>
+                                </div>                            
+                                </br>
+                                
+                                <input type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effec" value="Register">
+                            </form>   
+                            <div class='alternate-sign-in'>
+                                <div>Or</div>                                
+                                <div id='google-sign-in'></div>      
                             </div>
-                            </br>
-                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                <input class="mdl-textfield__input" type="text" id="username" name="username" required value="{{.SessionUser.Username}}">
-                                <label class="mdl-textfield__label" for="name">Username</label>
-                            </div>
-                            </br>
-                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                <input class="mdl-textfield__input" type="text" id="email" name="email" required value="{{.SessionUser.Email}}">
-                                <label class="mdl-textfield__label" for="email">Email</label>
-                            </div>
-                            </br>
-                            <div class="mdl-textfield mdl-js-textfield">
-                                <textarea class="mdl-textfield__input" type="text" rows= "3" id="details" name="details">{{.SessionUser.Details}}</textarea>
-                                <label class="mdl-textfield__label" for="details">Details about yourself</label>
-                            </div>
-                            </br>
-                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                <input class="mdl-textfield__input" type="password" required id="password" name="password">
-                                <label class="mdl-textfield__label" for="password">Password</label>
-                            </div>                            
-                            </br>
-                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                <input class="mdl-textfield__input" type="password" required id="confirmpassword" name="confirmpassword">
-                                <label class="mdl-textfield__label" for="confirmpassword">Confirm Password</label>
-                            </div>                            
-                            </br>
-                            
-                            <input type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effec" value="Register">
-                        </form>                
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
-    </div>    
+    </div>
+    <meta name="google-signin-client_id" content="YOUR_CLIENT_ID.apps.googleusercontent.com">    
+    <script>
+        function onSignIn(googleUser) {
+            var profile = googleUser.getBasicProfile();                        
+            
+            var id_token = googleUser.getAuthResponse().id_token;
+
+            fetch('/register/google', {
+                method: 'post',            
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                },
+                body: JSON.stringify({
+                    id_token: id_token,
+                    name: profile.getName(),
+                    avatar: profile.getImageUrl(),
+
+                })
+            })
+            .then(function (response) {
+                if (response.status == 200) {
+                    window.location.href = '/welcome';                         
+                }
+            })
+            .catch(function (error) {
+                var snackbarContainer = document.querySelector('#error-snackbar');
+                var data = {message: 'Problem signing in with Google'};
+                snackbarContainer.MaterialSnackbar.showSnackbar(data);
+            });
+        }
+
+        function renderButton() {
+            gapi.signin2.render('google-sign-in', {                
+                'scope': 'profile email',
+                'width': 240,
+                'height': 50,
+                'longtitle': true,
+                'theme': 'dark',
+                'onsuccess': onSignIn                           
+            });
+        }
+
+    </script>
+    <script src="https://apis.google.com/js/platform.js?onload=renderButton" async defer></script>
 {{end}}

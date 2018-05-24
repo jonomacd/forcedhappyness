@@ -2,14 +2,21 @@ package handler
 
 import (
 	"context"
+	"html/template"
 	"log"
 	"net/http"
 	"sort"
+	"strings"
 
 	"github.com/gorilla/sessions"
 	"github.com/jonomacd/forcedhappyness/site/dao"
 	"github.com/jonomacd/forcedhappyness/site/domain"
 	"github.com/jonomacd/forcedhappyness/site/tmpl"
+	"mvdan.cc/xurls"
+)
+
+var (
+	urlMatcher = xurls.Relaxed()
 )
 
 type HomeFeedHandler struct {
@@ -40,6 +47,7 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 	next := ""
 	var err error
 	var posts []dao.Post
+	var subData dao.Sub
 	if sub == "all" {
 		posts, next, err = dao.ReadPostsByTime(ctx, cursor, 20)
 		if err != nil && err != dao.ErrNotFound {
@@ -47,6 +55,7 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 			return
 		}
+		sub = ""
 	} else if sub != "" {
 		posts, next, err = dao.ReadPostsBySubTime(ctx, sub, cursor, 20)
 		if err != nil && err != dao.ErrNotFound {
@@ -54,6 +63,16 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 			return
 		}
+
+		subData, err = dao.ReadSub(ctx, sub)
+		if err != nil && err != dao.ErrNotFound {
+			log.Printf("Post read by sub failed: %v", err)
+			renderError(w, "Whoops, There was a problem trying to build this sub", hasSession)
+			return
+		}
+
+		subData.Description = augmentWithLinks(subData.Description)
+
 	} else {
 		u, err := dao.ReadUserByID(ctx, userID)
 		if err != nil {
@@ -79,7 +98,8 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 			Next:       next,
 			Previous:   cursor,
 		},
-		Sub: sub,
+		Sub:     sub,
+		SubData: subData.Sub,
 	}
 
 	pwu, err := augmentPosts(ctx, userID, posts)
@@ -120,7 +140,14 @@ func ReadUserMentionAndFollowPosts(ctx context.Context, u dao.User, cursor strin
 		return nil, "", err
 	}
 
+	selfPosts, selfCursor, err := dao.ReadPostsByUser(ctx, u.ID, cc["self"], 20)
+	if err != nil && err != dao.ErrNotFound {
+		log.Printf("could not read self posts: %v", err)
+		return nil, "", err
+	}
+
 	cursors["mentions"] = mentionCursor
+	cursors["self"] = selfCursor
 
 	cursor, err = dao.CreateCursor(ctx, cursors)
 	if err != nil && err != dao.ErrNotFound {
@@ -129,6 +156,7 @@ func ReadUserMentionAndFollowPosts(ctx context.Context, u dao.User, cursor strin
 	}
 
 	posts = append(posts, mentionPosts...)
+	posts = append(posts, selfPosts...)
 	sort.Slice(posts, func(i, j int) bool {
 		return posts[i].Date.After(posts[j].Date)
 	})
@@ -150,6 +178,7 @@ func augmentPosts(ctx context.Context, userID string, posts []dao.Post) ([]domai
 			_, err := dao.ReadLike(ctx, userID, posts[ii].ID)
 			hasLiked = err == nil
 		}
+		posts[ii].Post.Text = augmentWithLinks(posts[ii].Post.Text)
 		posts[ii].Post.Text = linkMentionsAndHashtags(posts[ii].Post.Text, posts[ii].Post.MentionsUsername, posts[ii].Post.Hashtags)
 		pwu[ii] = domain.PostWithUser{
 			Post:     posts[ii].Post,
@@ -159,4 +188,15 @@ func augmentPosts(ctx context.Context, userID string, posts []dao.Post) ([]domai
 	}
 
 	return pwu, nil
+}
+
+func augmentWithLinks(text template.HTML) template.HTML {
+
+	return template.HTML(urlMatcher.ReplaceAllStringFunc(string(text), func(in string) string {
+		linkPrefix := ""
+		if !strings.HasPrefix(in, "http") {
+			linkPrefix = "//"
+		}
+		return "<a target='_blank' href='" + linkPrefix + in + "'>" + in + "</a>"
+	}))
 }

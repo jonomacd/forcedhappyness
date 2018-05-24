@@ -27,6 +27,7 @@
                     </div>
 
                     <div><a href="" onclick="return toggleDisplay({{.Post.ID}})" style='text-decoration: none;' class="material-icons">reply</a></div>
+                    <div><a href="" onclick="return false;" style='text-decoration: none;' class="material-icons">report</a></div>
                 </div>                
             </div>
             
@@ -98,7 +99,7 @@
     </div>
     <div class="next-button">        
         {{if .Next}}
-            <a style='color:black;text-decoration:none;' href='?cursor={{.Next}}' class="material-icons">navigate_next</a>
+            <a style='color:black;text-decoration:none;' href='?cursor={{.Next}}{{range $key,$value := .QueryParams}}&{{$key}}={{$value}}{{end}}' class="material-icons">navigate_next</a>
         {{end}}
     </div>
 {{end}}

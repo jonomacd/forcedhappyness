@@ -21,6 +21,7 @@ var (
 type User struct {
 	domain.User  `datastore:",flatten"`
 	PasswordHash []byte
+	SignInMethod string
 
 	K *datastore.Key `datastore:"__key__"`
 }

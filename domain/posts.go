@@ -10,7 +10,7 @@ import (
 
 type Post struct {
 	ID               string
-	Text             template.HTML
+	Text             template.HTML `datastore:",noindex"`
 	Date             time.Time
 	UserID           string
 	Sub              string
@@ -95,6 +95,7 @@ type PageData struct {
 	Posts   []PostWithUser
 	ReplyTo string
 	Sub     string
+	SubData Sub
 }
 
 type CommentData struct {

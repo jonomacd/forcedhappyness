@@ -28,14 +28,14 @@ type Post struct {
 	K *datastore.Key `datastore:"__key__"`
 }
 
-func CreatePost(ctx context.Context, p Post) error {
+func CreatePost(ctx context.Context, p Post) (string, error) {
 	if p.ID == "" {
 		p.ID = newToken("p_", 15)
 	}
 
 	if p.IsReply {
 		if err := updateReplyCount(ctx, p.Parent, 1); err != nil {
-			return err
+			return "", err
 		}
 	} else {
 		p.TopParent = p.ID
@@ -49,7 +49,7 @@ func CreatePost(ctx context.Context, p Post) error {
 	p.EntitiesString = entities
 	bb, err := json.Marshal(p.Analysis)
 	if err != nil {
-		return err
+		return "", err
 	}
 	p.AnalysisBytes = bb
 
@@ -57,13 +57,13 @@ func CreatePost(ctx context.Context, p Post) error {
 	p.Post.Text = template.HTML(template.HTMLEscapeString(string(p.Post.Text)))
 
 	key := datastore.NameKey(KindPost, p.ID, nil)
-	_, err = ds.Put(ctx, key, &p)
+	k, err := ds.Put(ctx, key, &p)
 	if err != nil {
-		return err
+		return "", err
 	}
 	err = updateUserPostedStatistics(ctx, p, p.UserID)
 
-	return err
+	return k.Name, err
 }
 
 func ReadPostByID(ctx context.Context, id string) (Post, error) {
@@ -177,8 +177,12 @@ func ReadPostsByUsers(ctx context.Context, userIDs []string, cursors map[string]
 	newCursors := map[string]string{}
 	for _, userID := range userIDs {
 		ups, c, err := ReadPostsByUser(ctx, userID, cursors[userID], limit)
-		if err != nil {
+		if err != nil && err != datastore.ErrNoSuchEntity {
 			return []Post{}, newCursors, err
+		}
+
+		if err == datastore.ErrNoSuchEntity {
+			continue
 		}
 		posts = append(posts, ups...)
 

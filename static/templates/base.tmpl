@@ -32,18 +32,22 @@
             <a style="text-decoration: none;" class="mdl-typography--text-uppercase mdl-color-text--grey-600" href="/">Forced Happyness</a>
           </span>          
           <!-- Add spacer, to align navigation to the right in desktop -->
-          <div class="fh-header-spacer mdl-layout-spacer"></div>          
-         <!-- Navigation -->
-         <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
-          <label class="mdl-button mdl-js-button mdl-button--icon" for="search">
-            <i class="material-icons">search</i>
-          </label>
-          <div class="mdl-textfield__expandable-holder">
-            <input class="mdl-textfield__input" placeholder="search" onkeyup='search();' type="text" id="search">            
-          </div>
-        </div>
-         <div class="fh-navigation-container">
-          <nav class="fh-navigation mdl-navigation">            
+          <div class="fh-header-spacer mdl-layout-spacer">                
+          </div>          
+          
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
+              <label class="mdl-button mdl-js-button mdl-button--icon" for="search">
+                <i class="material-icons">search</i>
+              </label>
+              <div class="mdl-textfield__expandable-holder">
+                <input class="mdl-textfield__input" placeholder="search" onkeyup='search();' type="text" id="search">            
+              </div>
+            </div>
+          
+         <!-- Navigation -->        
+            <div class="fh-navigation-container">
+              <nav class="fh-navigation mdl-navigation">                 
+            {{if .HasSession}}<a href='/user/me' style='font-size:32;' class='mdl-navigation__link material-icons'>account_box</a>{{end}}
             <a class="mdl-navigation__link mdl-typography--text-uppercase" href="" onclick="document.cookie = 'session=; expires=THU, 01 JAN 1970 00:00:00 GMT; path=/';window.location.href ='/login';return false;">{{if .HasSession}}Log Out{{else}}Log In{{end}}</a>
           </nav>
         </div>         
@@ -92,7 +96,7 @@
       })});
 
       function search() {       
-        event.preventDefault();        
+        event.preventDefault();
         if (event.keyCode === 13) {              
           window.location.href = '/search?value='+document.getElementById("search").value
         }

@@ -88,6 +88,11 @@ func (h *SubmitHandler) post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = sentiment.GetPerspective(ctx, text)
+	if err != nil {
+		log.Printf("Error getting perspective %v", err)
+	}
+
 	allowed, message, err := sentiment.CheckPost(ctx, u.User, postSentiment)
 	if err != nil {
 		log.Printf("unable check post sentiment %s: %v", userID, err)
@@ -121,7 +126,9 @@ func (h *SubmitHandler) post(w http.ResponseWriter, r *http.Request) {
 			topParent = parent
 		}
 		sub = p.Sub
-		url += "post/" + topParent + "#" + parent
+		url += "post/" + topParent + "#"
+	} else if sub != "" {
+		url += "u/" + sub
 	}
 
 	mentions := parseMentions(text)
@@ -141,7 +148,7 @@ func (h *SubmitHandler) post(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	err = dao.CreatePost(ctx, dao.Post{
+	id, err := dao.CreatePost(ctx, dao.Post{
 		Post: domain.Post{
 			Date:             time.Now(),
 			Text:             template.HTML(text),
@@ -160,7 +167,9 @@ func (h *SubmitHandler) post(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error writing post: %v", err)
 		return
 	}
-
+	if isReply {
+		url += id
+	}
 	http.Redirect(w, r, url, http.StatusSeeOther)
 }
 
