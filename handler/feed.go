@@ -30,6 +30,7 @@ func NewHomeFeedHandler(ss sessions.Store) *HomeFeedHandler {
 }
 
 func (h *HomeFeedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Got request to home handler")
 	renderHome(w, r, h.ss, "")
 
 }
@@ -87,7 +88,7 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 			return
 		}
-		if len(posts) == 0 && len(u.Follows) == 0 {
+		if len(u.Follows) == 0 {
 			http.Redirect(w, r, "/u/all", http.StatusSeeOther)
 			return
 		}

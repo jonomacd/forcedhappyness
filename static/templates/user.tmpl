@@ -27,7 +27,9 @@
                 </div>
             {{end}}
         </div>        
-
+        <div class="submit-feed">
+            {{block "submitform" .}}{{end}}
+        </div>
         {{block "posts" .}}
             Whoops looks like you have landed somewhere strange
         {{end}}
@@ -40,7 +42,7 @@
     function toggleFollow(userID){
         fetch('/follow', {
             method: 'post',
-            credentials: 'include',
+            credentials: 'same-origin',
             headers: {
             "Content-type": "application/json; charset=UTF-8"
             },

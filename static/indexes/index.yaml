@@ -1,0 +1,59 @@
+indexes:
+
+- kind: post 
+  ancestor: no
+  properties:
+  - name: IsReply 
+    direction: asc
+  - name: Sub 
+    direction: asc
+  - name: Date
+    direction: desc
+
+- kind: post 
+  ancestor: no
+  properties:
+  - name: IsReply
+    direction: asc
+  - name: Date
+    direction: desc
+
+- kind: post 
+  ancestor: no
+  properties:
+  - name: IsReply 
+    direction: asc
+  - name: UserID 
+    direction: asc
+  - name: Date
+    direction: desc
+
+- kind: post
+  ancestor: no
+  properties:
+  - name: IsReply
+    direction: asc
+  - name: Mentions
+    direction: asc
+  - name: Date
+    direction: desc
+
+- kind: post
+  ancestor: no
+  properties:
+  - name: IsReply
+    direction: asc
+  - name: MentionsUsername
+    direction: asc
+  - name: Date
+    direction: desc
+
+- kind: post
+  ancestor: no
+  properties:
+  - name: Hashtags
+    direction: asc
+  - name: IsReply
+    direction: asc
+  - name: Date
+    direction: desc

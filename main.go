@@ -1,8 +1,12 @@
 package main
 
 import (
+	"flag"
+	"io/ioutil"
+	"log"
 	"net/http"
 
+	"github.com/jonomacd/forcedhappyness/site/certificate"
 	"github.com/jonomacd/forcedhappyness/site/dao"
 	"github.com/jonomacd/forcedhappyness/site/handler"
 	"github.com/jonomacd/forcedhappyness/site/sentiment"
@@ -13,15 +17,34 @@ import (
 //go:generate statik -src=static/
 func main() {
 
-	dao.Init()
+	init := flag.Bool("init", false, "Use on first run on a new server")
+	flag.Parse()
+	if *init {
+		if err := certificate.Run("jonomacd@gmail.com"); err != nil {
+			log.Printf("error getting cert: %v", err)
+		}
+	}
+
 	sentiment.InitNLP()
 	statik.Init()
 	tmpl.MustInit()
-	//genTestData()
+
+	f, err := statik.StatikFS.Open("/indexes/index.yaml")
+	if err != nil {
+		panic(err)
+	}
+	bb, err := ioutil.ReadAll(f)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := dao.Init(bb); err != nil {
+		log.Printf("error init dao: %v", err)
+	}
 
 	registerHandlers()
 
-	http.ListenAndServe(":9091", nil)
+	http.ListenAndServe("0.0.0.0:80", nil)
 }
 
 func registerHandlers() {

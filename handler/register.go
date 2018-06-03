@@ -2,8 +2,6 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -149,17 +147,11 @@ type googleIdToken struct {
 
 func (h *GoogleRegisterHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
-	bb, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	defer r.Body.Close()
-	git := &googleIdToken{}
-	err = json.Unmarshal(bb, git)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+	r.ParseForm()
+	git := &googleIdToken{
+		Avatar:  r.Form.Get("avatar"),
+		IdToken: r.Form.Get("id_token"),
+		Name:    r.Form.Get("name"),
 	}
 
 	info, err := verifyIdToken(git.IdToken)
@@ -180,7 +172,7 @@ func (h *GoogleRegisterHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 			User: domain.User{
 				Email:        info.Email,
 				Name:         git.Name,
-				Username:     strings.Replace(git.Name, "", " ", -1),
+				Username:     strings.Replace(git.Name, " ", "", -1),
 				Avatar:       git.Avatar,
 				RegisterDate: time.Now(),
 			},
@@ -190,6 +182,7 @@ func (h *GoogleRegisterHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		err = dao.CreateUser(ctx, du)
 		if err != nil {
 			if err == dao.ErrEmailExists || err == dao.ErrUsernameExists {
+				log.Printf("User exists: %v", err)
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
@@ -201,26 +194,26 @@ func (h *GoogleRegisterHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 		err = newSession(w, r, h.ss, du.ID)
 		if err != nil {
-			log.Printf("Bad session: %v", err)
+			log.Printf("Bad session new user: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-
 		http.Redirect(w, r, "/welcome", http.StatusSeeOther)
+		return
 	} else {
 		// User is found. Let's set up a session.
 		err = newSession(w, r, h.ss, u.ID)
 		if err != nil {
-			log.Printf("Bad session: %v", err)
-			renderError(w, "Whoops, There was a problem trying to build this page", false)
+			log.Printf("Bad session existing user: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		redirect := r.Form.Get("redirect")
+		redirect := r.URL.Query().Get("redirect")
 		if redirect == "" {
 			redirect = "/"
 		}
-
 		http.Redirect(w, r, redirect, http.StatusSeeOther)
+		return
 	}
 
 }

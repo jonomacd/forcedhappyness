@@ -54,7 +54,7 @@
     function toggleLike(postID){
         fetch('/like', {
             method: 'post',
-            credentials: 'include',
+            credentials: 'same-origin',
             headers: {
             "Content-type": "application/json; charset=UTF-8"
             },

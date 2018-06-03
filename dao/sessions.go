@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/gob"
+	"fmt"
 	"math/big"
 	"net/http"
 	"time"
@@ -54,6 +55,7 @@ func NewSessionStore() *DatastoreStore {
 	return &DatastoreStore{
 		Codecs: securecookie.CodecsFromPairs(kp.KeyPairs...),
 		Options: &sessions.Options{
+			Domain: ".iwillbenice.com",
 			Path:   "/",
 			MaxAge: 86400 * 30,
 		},
@@ -112,9 +114,6 @@ func (s *DatastoreStore) Save(r *http.Request, w http.ResponseWriter,
 		return err
 	}
 	options := s.Options
-	if session.Options != nil {
-		options = session.Options
-	}
 	http.SetCookie(w, sessions.NewCookie(session.Name(), encoded, options))
 	return nil
 }
@@ -137,7 +136,7 @@ func (s *DatastoreStore) save(r *http.Request,
 		Value: serialized,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not put session %s: %v", session.ID, err)
 	}
 	return nil
 }
@@ -150,7 +149,7 @@ func (s *DatastoreStore) load(r *http.Request,
 	k := datastore.NameKey(s.kind, session.ID, nil)
 	entity := Session{}
 	if err := ds.Get(context.Background(), k, &entity); err != nil {
-		return err
+		return fmt.Errorf("Could not get session %s: %v", session.ID, err)
 	}
 	if err := deserialize(entity.Value, &session.Values); err != nil {
 		return err

@@ -87,6 +87,7 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 	}
 
 	posts, next, err := dao.ReadPostsByUser(ctx, u.ID, cursor, 20)
+
 	pg := domain.UserPage{
 		User: u.User,
 		BasePage: &domain.BasePage{
@@ -97,13 +98,16 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 		},
 		Follows: follows,
 	}
-	for _, post := range posts {
+	for ii, post := range posts {
 
 		hasLiked := false
 		if userID != "" {
 			_, err := dao.ReadLike(ctx, userID, post.ID)
 			hasLiked = err == nil
 		}
+
+		posts[ii].Post.Text = augmentWithLinks(posts[ii].Post.Text)
+		posts[ii].Post.Text = linkMentionsAndHashtags(posts[ii].Post.Text, posts[ii].Post.MentionsUsername, posts[ii].Post.Hashtags)
 
 		pg.Posts = append(pg.Posts, domain.PostWithUser{
 			Post:     post.Post,

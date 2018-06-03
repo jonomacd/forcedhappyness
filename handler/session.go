@@ -8,12 +8,12 @@ import (
 )
 
 const (
-	sessionName      = "session"
+	sessionName      = "iwbn-session"
 	sessionUserIDKey = "userID"
 )
 
 func getUserID(w http.ResponseWriter, r *http.Request, ss sessions.Store) (string, bool) {
-	session, err := ss.Get(r, "session")
+	session, err := ss.Get(r, sessionName)
 	if err != nil {
 		s, _ := ss.New(r, sessionName)
 		s.Options.MaxAge = -1

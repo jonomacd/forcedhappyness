@@ -50,35 +50,21 @@
             </div>
         </main>
     </div>
-    <meta name="google-signin-client_id" content="YOUR_CLIENT_ID.apps.googleusercontent.com">    
+    <meta name="google-signin-client_id" content="507952776391-k00kit01ptghpsf4rd3u90n40s2b2lnr.apps.googleusercontent.com">    
+    <form id='google-form' style='display: none;' action="/register/google" method='post'>
+        <input id='google-id_token' type="hidden" name="id_token">
+        <input id='google-name' type="hidden" name="name">
+        <input id='google-avatar' type="hidden" name="avatar">    
+    </form>
     <script>
         function onSignIn(googleUser) {
-            var profile = googleUser.getBasicProfile();                        
-            
-            var id_token = googleUser.getAuthResponse().id_token;
-
-            fetch('/register/google', {
-                method: 'post',            
-                headers: {
-                    "Content-type": "application/json; charset=UTF-8"
-                },
-                body: JSON.stringify({
-                    id_token: id_token,
-                    name: profile.getName(),
-                    avatar: profile.getImageUrl(),
-
-                })
-            })
-            .then(function (response) {
-                if (response.status == 200) {
-                    window.location.href = '/welcome';                         
-                }
-            })
-            .catch(function (error) {
-                var snackbarContainer = document.querySelector('#error-snackbar');
-                var data = {message: 'Problem signing in with Google'};
-                snackbarContainer.MaterialSnackbar.showSnackbar(data);
-            });
+            var profile = googleUser.getBasicProfile();                                
+            var id_token = googleUser.getAuthResponse().id_token;                
+            document.getElementById('google-id_token').value = id_token;
+            document.getElementById('google-name').value = profile.getName();
+            document.getElementById('google-avatar').value = profile.getImageUrl();
+            googleUser.disconnect();
+            document.getElementById('google-form').submit();
         }
 
         function renderButton() {
