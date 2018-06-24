@@ -11,6 +11,7 @@ import (
 	"time"
 
 	language "cloud.google.com/go/language/apiv1"
+	"github.com/jonomacd/forcedhappyness/site/dao"
 	"golang.org/x/net/context"
 	languagepb "google.golang.org/genproto/googleapis/cloud/language/v1"
 )
@@ -28,11 +29,24 @@ func InitNLP() {
 	}
 
 	perspectiveKey = os.Getenv("PERSPECTIVE_API_CREDENTIALS")
+	if perspectiveKey == "" {
+		perspectiveKey = dao.GetPerspectiveKey()
+	}
 }
 
-func GetNLP(ctx context.Context, text string) (*languagepb.AnnotateTextResponse, error) {
+func GetNLP(ctx context.Context, text string) (*languagepb.AnnotateTextResponse, *PerspectiveResponse, error) {
 	// Detects the sentiment of the text.
 	now := time.Now()
+	perChan := make(chan *PerspectiveResponse)
+	go func() {
+		perspective, err := GetPerspective(ctx, text)
+		if err != nil {
+			log.Printf("Perspective call failed %v", err)
+			perChan <- nil
+			return
+		}
+		perChan <- perspective
+	}()
 	sentiment, err := nlpClient.AnnotateText(ctx, &languagepb.AnnotateTextRequest{
 		Document: &languagepb.Document{
 			Source: &languagepb.Document_Content{
@@ -46,13 +60,14 @@ func GetNLP(ctx context.Context, text string) (*languagepb.AnnotateTextResponse,
 		},
 		EncodingType: languagepb.EncodingType_UTF8,
 	})
+	perspect := <-perChan
 	log.Printf("NLP time %s", time.Since(now))
 	if err != nil {
 		log.Fatalf("Failed to analyze text: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	return sentiment, nil
+	return sentiment, perspect, nil
 }
 
 /*
@@ -102,7 +117,7 @@ type PerspectiveSpan struct {
 	Score PerspectiveScore `json:"score,omitempty"`
 }
 
-func GetPerspective(ctx context.Context, text string) error {
+func GetPerspective(ctx context.Context, text string) (*PerspectiveResponse, error) {
 	pr := PerspectiveRequest{
 		Comment: PerspectiveComment{
 			Text: text,
@@ -114,27 +129,27 @@ func GetPerspective(ctx context.Context, text string) error {
 	}
 	bb, err := json.Marshal(pr)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	rsp, err := http.Post(getPerspectiveURL(), "application/json", bytes.NewReader(bb))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	rspBody, err := ioutil.ReadAll(rsp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer rsp.Body.Close()
 	pRsp := &PerspectiveResponse{}
 	err = json.Unmarshal(rspBody, &pRsp)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	log.Printf("Got perspective %v", string(rspBody))
-	return nil
+	return pRsp, nil
 }
 
 func getPerspectiveURL() string {

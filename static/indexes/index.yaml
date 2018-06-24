@@ -57,3 +57,13 @@ indexes:
     direction: asc
   - name: Date
     direction: desc
+
+- kind: post
+  ancestor: no
+  properties:
+  - name: Searchtags
+    direction: asc
+  - name: IsReply
+    direction: asc
+  - name: Date
+    direction: desc

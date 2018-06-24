@@ -55,6 +55,12 @@ func CreatePost(ctx context.Context, p Post) (string, error) {
 
 	// Escape post text html. We can't let this get in the DB without escaping!
 	p.Post.Text = template.HTML(template.HTMLEscapeString(string(p.Post.Text)))
+	for ii, mu := range p.Post.MentionsUsername {
+		p.Post.MentionsUsername[ii] = template.HTMLEscapeString(mu)
+	}
+	for ii, ht := range p.Post.Hashtags {
+		p.Post.Hashtags[ii] = template.HTMLEscapeString(ht)
+	}
 
 	key := datastore.NameKey(KindPost, p.ID, nil)
 	k, err := ds.Put(ctx, key, &p)
@@ -265,6 +271,39 @@ func ReadPostByHashtag(ctx context.Context, tag, cursor string, limit int) ([]Po
 		return nil, "", err
 	}
 	q := datastore.NewQuery(KindPost).Filter("Hashtags = ", tag).Filter("IsReply =", false).Order("-Date").Start(c).Limit(limit)
+	posts := []Post{}
+	it := ds.Run(ctx, q)
+	for {
+		p := Post{}
+		_, err := it.Next(&p)
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return []Post{}, "", err
+		}
+
+		c, err = it.Cursor()
+		if err != nil {
+			return []Post{}, "", err
+		}
+		populatePost(&p)
+		posts = append(posts, p)
+	}
+
+	if len(posts) == 0 {
+		return []Post{}, "", ErrNotFound
+	}
+
+	return posts, c.String(), nil
+}
+
+func ReadPostBySearchtag(ctx context.Context, tag, cursor string, limit int) ([]Post, string, error) {
+	c, err := datastore.DecodeCursor(cursor)
+	if err != nil {
+		return nil, "", err
+	}
+	q := datastore.NewQuery(KindPost).Filter("Searchtags = ", tag).Filter("IsReply =", false).Order("-Date").Start(c).Limit(limit)
 	posts := []Post{}
 	it := ds.Run(ctx, q)
 	for {

@@ -29,7 +29,7 @@ func (h *SubHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, hasSession := getUserID(w, r, h.ss)
-	sub, err := parth.SubSegToString(r.URL.Path, "u")
+	sub, err := parth.SubSegToString(r.URL.Path, "n")
 	if err != nil {
 		log.Printf("error getting sub: %v", err)
 		renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
@@ -109,7 +109,7 @@ func (h *SubCRUDHandler) post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/u/"+sub, http.StatusSeeOther)
+	http.Redirect(w, r, "/n/"+sub, http.StatusSeeOther)
 }
 
 func (h *SubCRUDHandler) put(w http.ResponseWriter, r *http.Request) {

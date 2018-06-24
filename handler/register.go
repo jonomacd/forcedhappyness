@@ -68,7 +68,7 @@ func (h *RegisterHandler) post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if password != "" && len(password) < 4 {
+	if password != "" && len(password) < 5 {
 		tmpl.GetTemplate("register").Execute(w, domain.BasePage{
 			ErrorToast:  "Come on... You know that password is too short.",
 			SessionUser: u,

@@ -98,7 +98,7 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 		},
 		Follows: follows,
 	}
-	for ii, post := range posts {
+	for _, post := range posts {
 
 		hasLiked := false
 		if userID != "" {
@@ -106,8 +106,8 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 			hasLiked = err == nil
 		}
 
-		posts[ii].Post.Text = augmentWithLinks(posts[ii].Post.Text)
-		posts[ii].Post.Text = linkMentionsAndHashtags(posts[ii].Post.Text, posts[ii].Post.MentionsUsername, posts[ii].Post.Hashtags)
+		post.Post.Text = augmentWithLinks(post.Post.Text)
+		post.Post.Text = linkMentionsAndHashtags(post.Post.Text, post.Post.MentionsUsername, post.Post.Hashtags)
 
 		pg.Posts = append(pg.Posts, domain.PostWithUser{
 			Post:     post.Post,

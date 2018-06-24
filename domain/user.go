@@ -42,6 +42,16 @@ func (u User) AvatarUrl() string {
 	return g.URLParse(u.Email)
 }
 
+func (u User) AvatarLarge() string {
+	a := u.AvatarUrl()
+
+	if strings.Contains(a, "google") {
+		return a + "?sz=500"
+	}
+
+	return a
+}
+
 func (u User) NameTitle() string {
 	return strings.Title(u.Name)
 }

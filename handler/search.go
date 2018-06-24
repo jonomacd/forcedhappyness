@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"sort"
 
 	"github.com/gorilla/sessions"
 	"github.com/jonomacd/forcedhappyness/site/dao"
@@ -39,8 +40,47 @@ func (h *SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Searching: %v", tag)
 
 	cursor := r.URL.Query().Get("cursor")
+	cc := map[string]string{}
+	var err error
+	if cursor != "" {
+		cc, err = dao.ReadCursor(ctx, cursor)
+		if err != nil && err != dao.ErrNotFound {
+			log.Printf("cursor read failed: %v", err)
+			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
+			return
+		}
+	}
 	next := ""
-	posts, next, err := dao.ReadPostByHashtag(context.Background(), tag, cursor, 20)
+	posts, next, err := dao.ReadPostByHashtag(context.Background(), tag, cc["hashtag"], 20)
+	if err != nil && err != dao.ErrNotFound {
+		log.Printf("hashtag read failed: %v", err)
+		renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
+		return
+	}
+
+	cc["hashtag"] = next
+
+	nextsearch := ""
+	postsSearch, nextsearch, err := dao.ReadPostBySearchtag(context.Background(), tag, cc["searchtag"], 20)
+	if err != nil && err != dao.ErrNotFound {
+		log.Printf("searchtag read failed: %v", err)
+		renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
+		return
+	}
+	cc["searchtag"] = nextsearch
+
+	next, err = dao.CreateCursor(ctx, cc)
+	if err != nil {
+		log.Printf("cursor create failed: %v", err)
+		renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
+		return
+	}
+
+	posts = append(posts, postsSearch...)
+
+	sort.Slice(posts, func(i, j int) bool {
+		return posts[i].Date.After(posts[j].Date)
+	})
 
 	pg := domain.PageData{
 		BasePage: &domain.BasePage{

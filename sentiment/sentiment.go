@@ -11,9 +11,36 @@ import (
 	languagepb "google.golang.org/genproto/googleapis/cloud/language/v1"
 )
 
-func CheckPost(ctx context.Context, user domain.User, sentiment *languagepb.AnnotateTextResponse) (bool, string, error) {
+func CheckPost(ctx context.Context, user domain.User, sentiment *languagepb.AnnotateTextResponse, perspective *PerspectiveResponse) (bool, string, error) {
 	now := time.Now()
 	score := sentiment.DocumentSentiment.Score
+
+	if perspective != nil {
+		if tox, ok := perspective.AttributeScores["TOXICITY"]; ok {
+			ps := tox.SummaryScore.Value
+			if ps > 0.4 {
+				score = score - 0.1
+			}
+			if ps > 0.5 {
+				score = score - 0.1
+			}
+			if ps > 0.6 {
+				score = score - 0.1
+			}
+			if ps > 0.7 {
+				score = score - 0.1
+			}
+			if ps > 0.8 {
+				score = score - 0.1
+			}
+			if ps > 0.9 {
+				score = score - 0.1
+			}
+			if score < -1 {
+				score = -1
+			}
+		}
+	}
 
 	if user.AngryBanThreshold == 0 {
 		user.AngryBanThreshold = -0.3
@@ -49,25 +76,25 @@ func CheckPost(ctx context.Context, user domain.User, sentiment *languagepb.Anno
 			". Remember you can still say something nice.", nil
 	}
 
-	if sentiment.DocumentSentiment.Score < -0.9 {
+	if score < -0.9 {
 		return false, "Are you okay? That is just too much. Take a deep breath and try again. Be constructive not angry.", nil
 	}
-	if sentiment.DocumentSentiment.Score < -0.7 {
+	if score < -0.7 {
 		return false, "I don't know... That is a bit harsh. Try to reword it. Remember you are talking to a person not a screen.", nil
 	}
-	if sentiment.DocumentSentiment.Score < -0.5 {
+	if score < -0.5 {
 		return false, "Nicer. Be nicer. It's the whole point of why we are here and not some other corner of the internet", nil
 	}
 
-	if sentiment.DocumentSentiment.Score < -0.3 {
+	if score < -0.3 {
 		return false, "Try being a bit nicer. Remember be constructive not mean.", nil
 	}
 
-	if sentiment.DocumentSentiment.Score < -0.2 {
+	if score < -0.2 {
 		return false, "This one is on the line and we might be wrong about it. Try being a bit nicer.", nil
 	}
 
-	if sentiment.DocumentSentiment.Score < 0 {
+	if score < 0 {
 		return true, "Hmm... We'll let this slide but if you keep up these sorts of posts we'll start stopping you.", nil
 	}
 

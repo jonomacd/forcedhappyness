@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"time"
@@ -44,4 +45,18 @@ func execute(name string, args ...string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
+}
+
+type perspectivekey struct {
+	Key string
+}
+
+func GetPerspectiveKey() string {
+	key := datastore.NameKey("perspective", "key", nil)
+	pk := &perspectivekey{}
+	err := ds.Get(context.Background(), key, pk)
+	if err != nil {
+		log.Printf("Unable to read perspective key: %v", err)
+	}
+	return pk.Key
 }

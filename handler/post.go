@@ -54,33 +54,17 @@ func renderPost(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 
 	pmap := make(map[string][]domain.PostWithUser, len(posts))
 	var topPost domain.PostWithUser
-	for _, post := range posts {
 
-		post.Post.Text = linkMentionsAndHashtags(post.Post.Text, post.Post.MentionsUsername, post.Post.Hashtags)
-		user, err := dao.ReadUserByID(context.Background(), post.UserID)
-		if err != nil {
-			log.Printf("Post read failed: %v", err)
-			renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
-			return
-		}
+	pwu, err := augmentPosts(context.Background(), userID, posts)
+	for _, pu := range pwu {
 
-		hasLiked := false
-		if userID != "" {
-			_, err := dao.ReadLike(context.Background(), userID, post.ID)
-			hasLiked = err == nil
-		}
-		pu := domain.PostWithUser{
-			Post:      post.Post,
-			User:      user.User,
-			HasLiked:  hasLiked,
-			Highlight: post.ID == postID,
-		}
+		pu.Highlight = pu.Post.ID == postID
 
-		if post.TopParent == post.ID {
+		if pu.Post.TopParent == pu.Post.ID {
 			topPost = pu
 			continue
 		}
-		pmap[post.Parent] = append(pmap[post.Parent], pu)
+		pmap[pu.Post.Parent] = append(pmap[pu.Post.Parent], pu)
 	}
 
 	pg.Post = domain.PostWithComments{

@@ -35,7 +35,7 @@ type key struct {
 // If empty it will use "Session".
 //
 // See NewCookieStore() for a description of the other parameters.
-func NewSessionStore() *DatastoreStore {
+func NewSessionStore(domain string) *DatastoreStore {
 
 	kind := "session"
 	k := datastore.NameKey("sessionKey", "key", nil)
@@ -55,7 +55,7 @@ func NewSessionStore() *DatastoreStore {
 	return &DatastoreStore{
 		Codecs: securecookie.CodecsFromPairs(kp.KeyPairs...),
 		Options: &sessions.Options{
-			Domain: ".iwillbenice.com",
+			Domain: domain,
 			Path:   "/",
 			MaxAge: 86400 * 30,
 		},
@@ -94,6 +94,9 @@ func (s *DatastoreStore) New(r *http.Request, name string) (*sessions.Session,
 			if err == nil {
 				session.IsNew = false
 			}
+			if err == ErrNotFound {
+				err = nil
+			}
 		}
 	}
 	return session, err
@@ -115,6 +118,22 @@ func (s *DatastoreStore) Save(r *http.Request, w http.ResponseWriter,
 	}
 	options := s.Options
 	http.SetCookie(w, sessions.NewCookie(session.Name(), encoded, options))
+	return nil
+}
+
+func (s *DatastoreStore) Delete(r *http.Request, w http.ResponseWriter, session *sessions.Session) error {
+	if session == nil {
+		return fmt.Errorf("No Session")
+	}
+	if err := s.delete(r, session.ID); err != nil {
+		return err
+	}
+
+	http.SetCookie(w, sessions.NewCookie(session.Name(), "", &sessions.Options{
+		Domain: ".iwillbenice.com",
+		Path:   "/",
+		MaxAge: -1,
+	}))
 	return nil
 }
 
@@ -149,10 +168,23 @@ func (s *DatastoreStore) load(r *http.Request,
 	k := datastore.NameKey(s.kind, session.ID, nil)
 	entity := Session{}
 	if err := ds.Get(context.Background(), k, &entity); err != nil {
+		if err == datastore.ErrNoSuchEntity {
+			return ErrNotFound
+		}
 		return fmt.Errorf("Could not get session %s: %v", session.ID, err)
 	}
 	if err := deserialize(entity.Value, &session.Values); err != nil {
 		return err
+	}
+	return nil
+}
+
+func (s *DatastoreStore) delete(r *http.Request,
+	ID string) error {
+
+	k := datastore.NameKey(s.kind, ID, nil)
+	if err := ds.Delete(context.Background(), k); err != nil {
+		return fmt.Errorf("Could not delete session %s: %v", ID, err)
 	}
 	return nil
 }

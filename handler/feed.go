@@ -89,7 +89,7 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 			return
 		}
 		if len(u.Follows) == 0 {
-			http.Redirect(w, r, "/u/all", http.StatusSeeOther)
+			http.Redirect(w, r, "/n/all", http.StatusSeeOther)
 			return
 		}
 	}

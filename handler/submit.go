@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gernest/mention"
@@ -82,18 +83,13 @@ func (h *SubmitHandler) post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	postSentiment, err := sentiment.GetNLP(ctx, text)
+	postSentiment, perspective, err := sentiment.GetNLP(ctx, text)
 	if err != nil {
 		log.Printf("unable to read sentiment %s: %v", userID, err)
 		return
 	}
 
-	err = sentiment.GetPerspective(ctx, text)
-	if err != nil {
-		log.Printf("Error getting perspective %v", err)
-	}
-
-	allowed, message, err := sentiment.CheckPost(ctx, u.User, postSentiment)
+	allowed, message, err := sentiment.CheckPost(ctx, u.User, postSentiment, perspective)
 	if err != nil {
 		log.Printf("unable check post sentiment %s: %v", userID, err)
 		return
@@ -128,7 +124,7 @@ func (h *SubmitHandler) post(w http.ResponseWriter, r *http.Request) {
 		sub = p.Sub
 		url += "post/" + topParent + "#"
 	} else if sub != "" {
-		url += "u/" + sub
+		url += "n/" + sub
 	}
 
 	mentions := parseMentions(text)
@@ -148,6 +144,14 @@ func (h *SubmitHandler) post(w http.ResponseWriter, r *http.Request) {
 
 	}
 
+	searchtags := make([]string, 0, len(postSentiment.Entities))
+	for _, ent := range postSentiment.Entities {
+		if !strings.HasPrefix(ent.Name, "#") && !strings.HasPrefix(ent.Name, "@") {
+			searchtags = append(searchtags, strings.ToLower(ent.Name))
+			log.Printf("tag %v", ent.Name)
+		}
+	}
+
 	id, err := dao.CreatePost(ctx, dao.Post{
 		Post: domain.Post{
 			Date:             time.Now(),
@@ -161,6 +165,7 @@ func (h *SubmitHandler) post(w http.ResponseWriter, r *http.Request) {
 			Mentions:         mentionsID,
 			MentionsUsername: mentionsUsername,
 			Hashtags:         parseHashtags(text),
+			Searchtags:       searchtags,
 		},
 	})
 	if err != nil {

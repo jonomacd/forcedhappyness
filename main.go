@@ -18,6 +18,8 @@ import (
 func main() {
 
 	init := flag.Bool("init", false, "Use on first run on a new server")
+	port := flag.String("port", "80", "Port number to use")
+	domain := flag.String("domain", ".iwillbenice.com", "Domain to serve on")
 	flag.Parse()
 	if *init {
 		if err := certificate.Run("jonomacd@gmail.com"); err != nil {
@@ -25,7 +27,6 @@ func main() {
 		}
 	}
 
-	sentiment.InitNLP()
 	statik.Init()
 	tmpl.MustInit()
 
@@ -42,17 +43,21 @@ func main() {
 		log.Printf("error init dao: %v", err)
 	}
 
-	registerHandlers()
+	sentiment.InitNLP()
 
-	http.ListenAndServe("0.0.0.0:80", nil)
+	registerHandlers(*domain)
+	addr := "0.0.0.0:" + *port
+	log.Printf("Serving on %s", addr)
+	err = http.ListenAndServe(addr, nil)
+	log.Printf("Failed to serve: %v", err)
 }
 
-func registerHandlers() {
-
-	sessionStore := dao.NewSessionStore()
+func registerHandlers(domain string) {
+	log.Printf("Registering handlers")
+	sessionStore := dao.NewSessionStore(domain)
 
 	http.Handle("/", handler.NewHomeFeedHandler(sessionStore))
-	http.Handle("/u/", handler.NewSubHandler(sessionStore))
+	http.Handle("/n/", handler.NewSubHandler(sessionStore))
 	http.Handle("/sub", handler.NewSubCRUDHandler(sessionStore))
 	http.Handle("/post/", handler.NewPostHandler(sessionStore))
 	http.Handle("/settings", handler.NewSettingsHandler(sessionStore))
@@ -60,6 +65,7 @@ func registerHandlers() {
 	http.Handle("/submit", handler.NewSubmitHandler(sessionStore))
 	http.Handle("/reply/", handler.NewReplyHandler(sessionStore))
 	http.Handle("/login", handler.NewLoginHandler(sessionStore))
+	http.Handle("/logout", handler.NewLogoutHandler(sessionStore))
 	http.Handle("/register", handler.NewRegisterHandler(sessionStore))
 	http.Handle("/register/google", handler.NewGoogleRegisterHandler(sessionStore))
 	http.Handle("/like", handler.NewLikeHandler(sessionStore))

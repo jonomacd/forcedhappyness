@@ -85,7 +85,7 @@ func (h *LoginHandler) post(w http.ResponseWriter, r *http.Request) {
 		renderError(w, "Whoops, There was a problem trying to build this page", false)
 		return
 	}
-
+	log.Printf("Logged in successfully %s", u.Email)
 	http.Redirect(w, r, redirect, http.StatusSeeOther)
 }
 
@@ -105,4 +105,29 @@ func (h *LoginHandler) get(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Template failed: %v", err)
 	}
+}
+
+type LogoutHandler struct {
+	ss sessions.Store
+}
+
+func NewLogoutHandler(ss sessions.Store) *LogoutHandler {
+	return &LogoutHandler{
+		ss: ss,
+	}
+}
+
+func (h *LogoutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	session, err := h.ss.Get(r, sessionName)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+	err = h.ss.(*dao.DatastoreStore).Delete(r, w, session)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

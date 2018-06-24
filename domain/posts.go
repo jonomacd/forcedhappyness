@@ -23,6 +23,7 @@ type Post struct {
 	Mentions         []string
 	MentionsUsername []string
 	Hashtags         []string
+	Searchtags       []string
 
 	// NLP fields
 	Analysis *languagepb.AnnotateTextResponse `datastore:"-"`

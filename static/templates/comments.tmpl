@@ -1,9 +1,10 @@
 {{define "body"}}
     <div class="fh-feed mdl-layout mdl-js-layout has-drawer is-upgraded">
-        <main class="mdl-layout__content">
+        <main class="mdl-layout__content comment-feed">
             <div class="fh-feed__posts mdl-grid">
                 {{block "postAndComments" .Post}}{{end}}            
             </div>
+
         </main>
     </div>
     {{block "postScript" .}}{{end}}
