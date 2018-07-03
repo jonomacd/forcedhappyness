@@ -18,6 +18,16 @@ func CheckPost(ctx context.Context, user domain.User, sentiment *languagepb.Anno
 	if perspective != nil {
 		if tox, ok := perspective.AttributeScores["TOXICITY"]; ok {
 			ps := tox.SummaryScore.Value
+
+			if ps < 0.05 {
+				score = score + 0.1
+			}
+			if ps < 0.1 {
+				score = score + 0.1
+			}
+			if ps < 0.2 {
+				score = score + 0.1
+			}
 			if ps > 0.4 {
 				score = score - 0.1
 			}

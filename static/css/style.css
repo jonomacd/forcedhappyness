@@ -50,14 +50,14 @@ body .fh-feed {
   background: linear-gradient(
     to left,
     white,
-    rgba(255, 0, 0, 0)
+    rgba(0, 0, 0, 0)
   )
 }
 .right-gradient {
   background: linear-gradient(
     to right,
     white,
-    rgba(255, 0, 0, 0)
+    rgba(0, 0, 0, 0)
   )
 }
 
@@ -391,7 +391,12 @@ body .fh-feed {
 }
 
 .user-avatar {
-  width:210px;  
+  width:210px; 
+  height: 250px; 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .follow-button {  
@@ -783,7 +788,7 @@ body .fh-feed {
 
 .post-contents {
   margin-left: 5px;
-  width: 100%;
+  width: calc(100% - 44px);
 }
 
 .post-user {
@@ -801,7 +806,8 @@ body .fh-feed {
 }
 
 .post-text {
-  margin-right: 5px
+  margin-right: 5px;
+  overflow-wrap: break-word;
 }
 
 .happytext {
@@ -818,6 +824,32 @@ body .fh-feed {
   right:0;
 }
 
+.shame {
+  color: black;
+  margin: 5px;
+}
+
+.notification-config {
+  margin: 15px;
+}
+
+.notification-form > label {
+  margin: 15px;
+}
+
+.div-post-image {
+  width: 100%;
+}
+
+.post-image {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.hover {
+  cursor: -webkit-grabbing;
+}
+
 @media (max-width: 600px) {
   .fh-header .mdl-layout__header-row {
     padding: 10px;
@@ -826,7 +858,7 @@ body .fh-feed {
   .main-body {
     background: white;
     height: 100%;
-    width: 600px;
+    width: 100%;
   }
   
   .main-flex {
@@ -848,7 +880,6 @@ body .fh-feed {
   }
   
   .action-happyness {
-    margin-left:auto;
     width: 85%;
   }
 

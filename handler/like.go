@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/jonomacd/forcedhappyness/site/dao"
+	"github.com/jonomacd/forcedhappyness/site/events"
 )
 
 type LikeHandler struct {
@@ -68,7 +69,11 @@ func (h *LikeHandler) post(w http.ResponseWriter, r *http.Request) {
 
 	_, err = dao.ReadLike(context.Background(), userID, postID)
 	if err == dao.ErrNotFound {
-		if err := dao.CreateLike(context.Background(), userID, body["postID"]); err != nil {
+		events.EventLike(events.LikeEvent{
+			LikedBy: userID,
+			Post:    postID,
+		})
+		if err := dao.CreateLike(context.Background(), userID, postID); err != nil {
 			log.Printf("cannot parse form b %v", err)
 			return
 		}

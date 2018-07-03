@@ -61,6 +61,10 @@ var (
 			Name:      "settings",
 			filepaths: []string{templateDir + "settings" + ext},
 		},
+		"notifications": &TemplateInfo{
+			Name:      "notifications",
+			filepaths: []string{templateDir + "notifications" + ext},
+		},
 		"postonly": &TemplateInfo{
 			Name:   "postonly",
 			noBase: true,
@@ -86,6 +90,12 @@ var (
 			Name: "welcome",
 			filepaths: []string{
 				templateDir + "welcome" + ext,
+			},
+		},
+		"rottenposts": &TemplateInfo{
+			Name: "rottenposts",
+			filepaths: []string{
+				templateDir + "rottenposts" + ext,
 			},
 		},
 	}

@@ -61,9 +61,25 @@ indexes:
 - kind: post
   ancestor: no
   properties:
-  - name: Searchtags
+  - name: EntitiesString
     direction: asc
   - name: IsReply
     direction: asc
   - name: Date
     direction: desc
+
+- kind: rottenpost
+  ancestor: no
+  properties:
+  - name: UserID
+    direction: asc
+  - name: Date
+    direction: desc
+
+- kind: followers
+  ancestor: no
+  properties:
+  - name: FollowerID
+    direction: asc
+  - name: FollowedID
+    direction: asc

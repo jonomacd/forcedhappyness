@@ -6,21 +6,21 @@
     <main class="mdl-layout__content">    
         <div class="user-card">
             <div class="user-avatar">
-                <img src="{{.User.AvatarLarge}}" height="210" width="210" onerror="this.src='/static/img/unknown-user.png'"/>
+                <img src="{{.User.AvatarLarge}}" height="210" width="210" onerror="this.src='/static/img/unknown-user.png'"/>                
+                <a class='shame' href='/shame/{{.User.Username}}'>See My Shame</a>                
             </div>
             <div class="name-details">
                 <h4>{{.User.NameTitle}}</h4>
                 {{.User.Details}}
             </div>   
-            <div class="user-happyness">{{block "happyness" .User}}{{end}}</div>
+            <div class="user-happyness">{{block "happyness" .User}}{{end}}</div>            
             {{if .HasSession | and (not $IsUser)}}
                 <div class="follow-button">
                     <button id='follow-button' onclick='toggleFollow({{.User.ID}})'class="follow-button mdl-cell--middle mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
                         {{if .Follows}}Unfollow{{else}}Follow{{end}}
                     </button>
                 </div>
-            {{end}}
-
+            {{end}}            
             {{if $IsUser}}
                 <div class="top-right-icon">
                     <a href='/settings' class="material-icons">settings</a>

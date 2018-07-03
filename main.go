@@ -9,6 +9,8 @@ import (
 	"github.com/jonomacd/forcedhappyness/site/certificate"
 	"github.com/jonomacd/forcedhappyness/site/dao"
 	"github.com/jonomacd/forcedhappyness/site/handler"
+	"github.com/jonomacd/forcedhappyness/site/images"
+	"github.com/jonomacd/forcedhappyness/site/push"
 	"github.com/jonomacd/forcedhappyness/site/sentiment"
 	"github.com/jonomacd/forcedhappyness/site/statik"
 	"github.com/jonomacd/forcedhappyness/site/tmpl"
@@ -29,6 +31,9 @@ func main() {
 
 	statik.Init()
 	tmpl.MustInit()
+	if err := images.Init(); err != nil {
+		log.Printf("image buckets failed to init: %v", err)
+	}
 
 	f, err := statik.StatikFS.Open("/indexes/index.yaml")
 	if err != nil {
@@ -44,17 +49,22 @@ func main() {
 	}
 
 	sentiment.InitNLP()
-
-	registerHandlers(*domain)
+	publicPushKey := push.Init()
+	registerHandlers(*domain, publicPushKey)
 	addr := "0.0.0.0:" + *port
 	log.Printf("Serving on %s", addr)
 	err = http.ListenAndServe(addr, nil)
 	log.Printf("Failed to serve: %v", err)
 }
 
-func registerHandlers(domain string) {
+func registerHandlers(domain, publicPushKey string) {
 	log.Printf("Registering handlers")
 	sessionStore := dao.NewSessionStore(domain)
+
+	if domain == "" {
+		// Use phony key
+		publicPushKey = "BFxNWyMfHFEcaZSb9kRkCoCCpQG5I_wNNGwR1CucRySfnH7Qv-8s6bHOHJpUIkA6K5HBZ00zCe7lenDy33ADUr8"
+	}
 
 	http.Handle("/", handler.NewHomeFeedHandler(sessionStore))
 	http.Handle("/n/", handler.NewSubHandler(sessionStore))
@@ -72,6 +82,23 @@ func registerHandlers(domain string) {
 	http.Handle("/follow", handler.NewFollowHandler(sessionStore))
 	http.Handle("/welcome", handler.NewWelcomeHandler(sessionStore))
 	http.Handle("/search", handler.NewSearchHandler(sessionStore))
+	http.Handle("/shame/", handler.NewRottenPostsHandler(sessionStore))
+	http.Handle("/notifications", handler.NewNotificationHandler(sessionStore, publicPushKey))
+	http.Handle("/upload", handler.NewUploadHandler(sessionStore))
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(statik.StatikFS)))
+
+	// Service worker MUST be at root of domain
+	f, err := statik.StatikFS.Open("/js/service-worker.js")
+	if err != nil {
+		panic(err)
+	}
+	serviceWorkerBytes, err := ioutil.ReadAll(f)
+	if err != nil {
+		panic(err)
+	}
+	http.HandleFunc("/service-worker.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/javascript")
+		w.Write(serviceWorkerBytes)
+	})
 }

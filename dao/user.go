@@ -10,13 +10,20 @@ import (
 )
 
 const (
-	KindUser = "user"
+	KindUser      = "user"
+	KindFollowers = "followers"
 )
 
 var (
 	ErrUsernameExists = fmt.Errorf("Username Exists")
 	ErrEmailExists    = fmt.Errorf("Email Exists")
 )
+
+type Followers struct {
+	FollowedID string
+	FollowerID string
+	K          *datastore.Key `datastore:"__key__"`
+}
 
 type User struct {
 	domain.User  `datastore:",flatten"`
@@ -120,9 +127,17 @@ func AddFollowerToUser(ctx context.Context, userID, followUserID string) error {
 		tx.Rollback()
 		return err
 	}
+
 	if _, err = tx.Commit(); err != nil {
 		return err
 	}
+
+	key = datastore.NameKey(KindFollowers, newToken("f_", 10), nil)
+	ds.Put(ctx, key, &Followers{
+		FollowedID: followUserID,
+		FollowerID: userID,
+	})
+
 	return nil
 }
 
@@ -147,6 +162,24 @@ func DeleteFollowerFromUser(ctx context.Context, userID, followUserID string) er
 	if _, err = tx.Commit(); err != nil {
 		return err
 	}
+
+	q := datastore.NewQuery(KindFollowers).Filter("FollowerID = ", userID).Filter("FollowedID = ", followUserID)
+	f := []Followers{}
+	_, err = ds.GetAll(ctx, q, &f)
+	if err != nil {
+		return err
+	}
+	if len(f) > 0 {
+		keys := []*datastore.Key{}
+		for _, ff := range f {
+			keys = append(keys, ff.K)
+		}
+		err = ds.DeleteMulti(ctx, keys)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -260,4 +293,24 @@ func UpdateUserPostAttemptStatistics(ctx context.Context, user User, score float
 		return err
 	}
 	return nil
+}
+
+func ReadFollowers(ctx context.Context, userID string) ([]string, error) {
+	q := datastore.NewQuery(KindFollowers).Filter("FollowedID = ", userID)
+
+	f := []Followers{}
+	_, err := ds.GetAll(ctx, q, &f)
+	if err != nil {
+		return nil, err
+	}
+	if len(f) == 0 {
+		return nil, ErrNotFound
+	}
+	followers := []string{}
+
+	for _, ff := range f {
+		followers = append(followers, ff.FollowerID)
+	}
+
+	return followers, nil
 }

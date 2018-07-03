@@ -8,6 +8,14 @@ import (
 	languagepb "google.golang.org/genproto/googleapis/cloud/language/v1"
 )
 
+type RottenPost struct {
+	ID            string
+	Text          string
+	Date          time.Time
+	UserID        string
+	RottenGroupId string
+}
+
 type Post struct {
 	ID               string
 	Text             template.HTML `datastore:",noindex"`
@@ -23,7 +31,11 @@ type Post struct {
 	Mentions         []string
 	MentionsUsername []string
 	Hashtags         []string
-	Searchtags       []string
+
+	LinkDetails []LinkDetails `datastore:",noindex"`
+
+	// DEPRECATED
+	Searchtags []string
 
 	// NLP fields
 	Analysis *languagepb.AnnotateTextResponse `datastore:"-"`
@@ -31,6 +43,35 @@ type Post struct {
 
 func (p Post) ReplyTo() string {
 	return p.ID
+}
+
+type LinkDetails struct {
+	Url  string
+	MIME string
+}
+
+func (ld LinkDetails) IsImage() bool {
+	switch ld.MIME {
+	case "image/bmp", "image/gif", "image/jpeg", "image/tiff", "image/png":
+		return true
+	}
+
+	return false
+}
+
+func (p Post) ImageLinkDetails() []LinkDetails {
+	lds := []LinkDetails{}
+	for _, ld := range p.LinkDetails {
+
+		if ld.IsImage() {
+			lds = append(lds, ld)
+		}
+		if len(lds) > 3 {
+			break
+		}
+	}
+
+	return lds
 }
 
 type PostWithUser struct {
@@ -102,4 +143,36 @@ type PageData struct {
 type CommentData struct {
 	*BasePage
 	Post PostWithComments
+}
+
+type RottenPostPageData struct {
+	*BasePage
+	RottenPosts []RottenPostWithUser
+}
+
+type RottenPostWithUser struct {
+	Post RottenPost
+	User User
+}
+
+func (p RottenPost) FormattedDate() string {
+	since := time.Since(p.Date)
+
+	if since < time.Minute*5 {
+		return "Just Now"
+	}
+
+	if since < time.Hour {
+		return fmt.Sprintf("%vm", int(since.Minutes()))
+	}
+
+	if since < time.Hour*24 {
+		return fmt.Sprintf("%vh", int(since.Hours()))
+	}
+
+	if since < time.Hour*24*30*365 {
+		return p.Date.Format("Jan 2")
+	}
+
+	return p.Date.Format("Jan 2 2006")
 }

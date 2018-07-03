@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"html/template"
 	"log"
+	"strings"
 
 	"google.golang.org/api/iterator"
 
@@ -40,9 +41,11 @@ func CreatePost(ctx context.Context, p Post) (string, error) {
 	} else {
 		p.TopParent = p.ID
 	}
-	entities := make([]string, len(p.Analysis.Entities))
-	for ii, entity := range p.Analysis.Entities {
-		entities[ii] = entity.Name
+	entities := make([]string, 0, len(p.Analysis.Entities))
+	for _, ent := range p.Analysis.Entities {
+		if !strings.HasPrefix(ent.Name, "#") && !strings.HasPrefix(ent.Name, "@") {
+			entities = append(entities, strings.ToLower(ent.Name))
+		}
 	}
 	p.SentimentMagnitude = p.Analysis.DocumentSentiment.Magnitude
 	p.SentimentScore = p.Analysis.DocumentSentiment.Score
@@ -298,12 +301,12 @@ func ReadPostByHashtag(ctx context.Context, tag, cursor string, limit int) ([]Po
 	return posts, c.String(), nil
 }
 
-func ReadPostBySearchtag(ctx context.Context, tag, cursor string, limit int) ([]Post, string, error) {
+func ReadPostByEntities(ctx context.Context, tag, cursor string, limit int) ([]Post, string, error) {
 	c, err := datastore.DecodeCursor(cursor)
 	if err != nil {
 		return nil, "", err
 	}
-	q := datastore.NewQuery(KindPost).Filter("Searchtags = ", tag).Filter("IsReply =", false).Order("-Date").Start(c).Limit(limit)
+	q := datastore.NewQuery(KindPost).Filter("EntitiesString = ", tag).Filter("IsReply =", false).Order("-Date").Start(c).Limit(limit)
 	posts := []Post{}
 	it := ds.Run(ctx, q)
 	for {
@@ -329,6 +332,51 @@ func ReadPostBySearchtag(ctx context.Context, tag, cursor string, limit int) ([]
 	}
 
 	return posts, c.String(), nil
+}
+
+func DeletePost(ctx context.Context, postID string) error {
+	key := datastore.NameKey(KindPost, postID, nil)
+	return ds.Delete(ctx, key)
+}
+
+func BlockExistingPost(ctx context.Context, post Post) error {
+	if err := DeletePost(ctx, post.ID); err != nil {
+		return err
+	}
+
+	_, err := CreateRottenPost(ctx, RottenPost{
+		RottenPost: domain.RottenPost{
+			Date:   post.Date,
+			Text:   string(post.Text),
+			UserID: post.UserID,
+		},
+	})
+
+	return err
+}
+
+func UpdatePostLinkDetails(ctx context.Context, post Post) error {
+	tx, err := ds.NewTransaction(ctx)
+	if err != nil {
+		return err
+	}
+
+	key := datastore.NameKey(KindPost, post.ID, nil)
+
+	p := &Post{}
+	if err := tx.Get(key, p); err != nil {
+		tx.Rollback()
+		return err
+	}
+	p.Post.LinkDetails = post.LinkDetails
+	if _, err := tx.Put(key, p); err != nil {
+		tx.Rollback()
+		return err
+	}
+	if _, err = tx.Commit(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func updateLikePost(ctx context.Context, postID string, update int64) error {

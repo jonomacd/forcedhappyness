@@ -61,13 +61,13 @@ func (h *SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	cc["hashtag"] = next
 
 	nextsearch := ""
-	postsSearch, nextsearch, err := dao.ReadPostBySearchtag(context.Background(), tag, cc["searchtag"], 20)
+	postsSearch, nextsearch, err := dao.ReadPostByEntities(context.Background(), tag, cc["entities"], 20)
 	if err != nil && err != dao.ErrNotFound {
-		log.Printf("searchtag read failed: %v", err)
+		log.Printf("Entities read failed: %v", err)
 		renderError(w, "Whoops, There was a problem trying to build this page", hasSession)
 		return
 	}
-	cc["searchtag"] = nextsearch
+	cc["entities"] = nextsearch
 
 	next, err = dao.CreateCursor(ctx, cc)
 	if err != nil {

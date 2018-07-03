@@ -3,8 +3,10 @@
         
         {{if .Sub}}<input type="hidden" name="sub" value="{{.Sub}}">{{end}}
         {{if .ReplyTo}}<input type="hidden" name="replyto" value="{{.ReplyTo}}">{{end}}
-        <textarea maxlength="500" oninput='this.nextElementSibling.innerText = this.value.length +"/500";' class="mdl-textfield__input message-input expanding" type="text" id="message" placeholder="Write here. Remember to be nice..." name="message" required></textarea>        
+        <textarea maxlength="500" oninput='this.nextElementSibling.innerText = this.value.length +"/500";' class="mdl-textfield__input message-input image-drop-zone expanding" type="text" placeholder="Write here. Remember to be nice..." name="message" required></textarea>
+        <input type="hidden" name="image-url" class="image-url">
         <div id='numleft' class='num-left'>0/500</div>
+        <img class='uploaded-image post-image' style='display: none;' src=''></img>
         <div class="submit-post-button">            
             <div class="spb-button">
                 <input type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effec" value="Submit">

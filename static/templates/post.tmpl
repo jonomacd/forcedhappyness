@@ -15,6 +15,11 @@
             <div class="mdl-color-text--grey-600 post-text">
                 <p class="quote">{{.Post.Text}}</p>                               
             </div>
+            {{range .Post.ImageLinkDetails}}                
+                <div class='div-post-image'>
+                    <img class='post-image' src="{{.Url}}">
+                </div>                
+            {{end}}
             <div class="{{if .Post.AngryPercent}}angrytext{{else}}happytext{{end}}">
                 <div class="action-happyness">
                     {{block "happyness" .Post}}{{end}}
@@ -82,6 +87,8 @@
                         badgeVal--;
                         bb.innerText = badgeVal;
                     }
+                    // We completely ignore the response. This is just a cache buster.
+                    fetch(window.location.href+window.location.search, {cache: "reload", credentials: 'same-origin'});
                 });                            
             }
         })

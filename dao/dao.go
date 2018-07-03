@@ -60,3 +60,18 @@ func GetPerspectiveKey() string {
 	}
 	return pk.Key
 }
+
+type vapidkey struct {
+	PublicKey  string
+	PrivateKey string
+}
+
+func GetVAPIDKey() *vapidkey {
+	key := datastore.NameKey("vapid", "key", nil)
+	pk := &vapidkey{}
+	err := ds.Get(context.Background(), key, pk)
+	if err != nil {
+		log.Printf("Unable to read VAPID Private key: %v", err)
+	}
+	return pk
+}

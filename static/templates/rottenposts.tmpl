@@ -1,0 +1,43 @@
+{{define "body"}}
+    <div class="fh-feed mdl-layout mdl-js-layout has-drawer is-upgraded">
+        <main class="mdl-layout__content">                
+            {{template "rottenposts" .}}
+        </main>
+    </div>
+{{end}}
+
+{{define "rottenpost"}}
+    <div name="{{.Post.ID}}" class="amazing post-box mdl-cell mdl-cell--12-col">
+        <div class="minilogo">
+            <a href='/user/{{.User.Username}}'><img class='profile-image' src="{{.User.AvatarUrl}}" height="44" width="44" onerror="this.src='/static/img/unknown-user.png'"/></a>
+        </div>
+        <div class='post-contents'>
+            <div class='post-user'>
+                <a href='/user/{{.User.Username}}'><strong>{{.User.Name}}</strong></a>
+                <a href='/user/{{.User.Username}}'>@{{.User.Username}}</a>                
+                - <span>{{.Post.FormattedDate}}</span>
+                
+            </div>   
+            <a class='anchor' name="{{.Post.ID}}"></a>
+            <div class="mdl-color-text--grey-600 post-text">
+                <p class="quote">{{.Post.Text}}</p>                               
+            </div>            
+        </div>
+    </div>      
+{{end}}
+
+{{define "rottenposts"}}
+    <div class="fh-feed__posts mdl-grid">
+        {{if not .RottenPosts}}
+        <p>Congrats! You have been very positive. Your shame is clean!</p>
+        {{end}}
+        {{range .RottenPosts}}
+            {{block "rottenpost" .}}{{end}}
+        {{end}}        
+    </div>
+    <div class="next-button">        
+        {{if .Next}}
+            <a style='color:black;text-decoration:none;' href='?cursor={{.Next}}{{range $key,$value := .QueryParams}}&{{$key}}={{$value}}{{end}}' class="material-icons">navigate_next</a>
+        {{end}}
+    </div>
+{{end}}

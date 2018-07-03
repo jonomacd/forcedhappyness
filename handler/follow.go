@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/jonomacd/forcedhappyness/site/events"
+
 	"github.com/gorilla/sessions"
 	"github.com/jonomacd/forcedhappyness/site/dao"
 )
@@ -92,6 +94,10 @@ func (h *FollowHandler) post(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
+		events.EventFollow(events.FollowEvent{
+			FollowBy: userID,
+			Followed: followUserID,
+		})
 		err := dao.AddFollowerToUser(ctx, userID, followUserID)
 		if err != nil {
 			log.Printf("Cannot add follows %s %s: %v", userID, followUserID, err)

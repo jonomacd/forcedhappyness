@@ -1,0 +1,109 @@
+{{define "body"}}
+    <script  src="/static/js/submanager.js"></script>
+    <div class="fh-feed mdl-layout mdl-js-layout has-drawer is-upgraded">
+        <main class="mdl-layout__content">
+            <div class="fh-feed__posts mdl-grid">
+                <div class="mdl-card mdl-cell mdl-cell--12-col">
+                    <div class="mdl-card--border">
+                        
+                        <div id='enable-notifications' class='enable-notifications' style='display: none;'>
+                            <p>
+                                This device does not have notifications enabled. Click here to enable them. Your browser is going to ask if that is okay. This is for your protection so sites can't just send you notifications willy nilly. Only Allow if you actually want notifications from I will be nice. Remember, you can always turn this off.
+                            </p>
+                            <input type="submit" onclick='subscribe({{.ApplicationKey}}); return false;' class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effec" value="Allow Notifications">
+                        </div>
+                        <div id='your-device-sucks' style='display: none;'>
+                            <p>
+                                Oh dear, It looks like you have a device that is a little behind the times. It can't do notifications on the web. You should ask whoever made this device to work on bringing this feature and keep up with web standards. They don't want to get the reputation of being the next IE6 do they?
+                            </p>                            
+                        </div>
+                        <div id='enabled-notifications' class='enabled-notifications' style='display: none;'>
+                            <p>
+                                Notifications are enabled for this device. Thanks!{{if not .Notifications}} But you don't have any configured. Just disable and reenable to get some.{{end}}
+                            </p>        
+                            <input type="submit" onclick='unsubscribe(); return false;' class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effec" value="Disable Notifications">                    
+                        </div>
+                        </br>
+                        <p>
+                            If you want notifications to another device. Just load up his page an enable them. It even works on your laptop!
+                        </p>
+                        <form id='hidden-notification-form' action="/notifications" method='post' style='display: none;'>
+                            <input type="checkbox" id="followerpost-hidden" name="followerpost" checked>
+                            <input type="checkbox" name="followerget" id="followerget-hidden" checked>
+                            <input type="checkbox" name="likes" id="likes-hidden"  checked>
+                            <input type="checkbox" name="mentions" id="mentions-hidden" checked>
+                            <input type="checkbox" name="replies" id="replies-hidden" checked>
+                            <input type="text" name="hidden-sub" id="hidden-sub">
+                            <input type="text" name="redirect" id="hidden-redirect" value="{{.Redirect}}">
+                        </form>
+                        <div class="notification-config">
+                            {{range .Notifications}}
+                                {{template "notificationform" .}}
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>    
+{{end}}
+
+{{define "notificationform"}}
+    <h3>{{.Name}}</h3>                        
+    <form class="notification-form" action="/notifications" method='post'>   
+        <input type="hidden" name="_method" value="put" />         
+        <input type="hidden" name="id" value="{{.ID}}" />          
+        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="followerpost-{{.ID}}">
+            <input type="checkbox" id="followerpost-{{.ID}}" name="followerpost" class="mdl-switch__input" {{if .Config.FollowerPost}}checked{{end}}>
+            <span class="mdl-switch__label">When a Person you follow posts</span>
+        </label>
+        </br>
+        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="followerget-{{.ID}}">
+            <input type="checkbox" name="followerget" id="followerget-{{.ID}}" class="mdl-switch__input" {{if .Config.FollowerGet}}checked{{end}}>
+            <span class="mdl-switch__label">When you get a new follower</span>
+        </label>
+        </br>
+        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="likes-{{.ID}}">
+            <input type="checkbox" name="likes" id="likes-{{.ID}}" class="mdl-switch__input" {{if .Config.Likes}}checked{{end}}>
+            <span class="mdl-switch__label">When someone likes your post</span>
+        </label>
+        </br>
+        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="mentions-{{.ID}}">
+            <input type="checkbox" name="mentions" id="mentions-{{.ID}}" class="mdl-switch__input" {{if .Config.Mentions}}checked{{end}}>
+            <span class="mdl-switch__label">When someone @ mentions you</span>
+        </label>
+        </br>
+        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="replies-{{.ID}}">
+            <input type="checkbox" name="replies" id="replies-{{.ID}}" class="mdl-switch__input" {{if .Config.Replies}}checked{{end}}>
+            <span class="mdl-switch__label">When someone replies to your post</span>
+        </label>                            
+        </br>
+        {{if .Config.Users}}
+            <fieldset class='notification-users'>
+                <legend>User Notifications</legend>
+                {{range .Config.Users}}
+                    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="user-{{.}}">
+                        <input type="checkbox" name="user-{{.}}" id="user-{{.}}" class="mdl-switch__input" checked>
+                        <span class="mdl-switch__label">{{.}}</span>
+                    </label>                            
+                    </br>   
+                {{end}}
+            </fieldset>
+        {{end}}
+        {{if .Config.Subs}}
+            <fieldset class='notificatin-subs'>
+                <legend>Sub-Nice Notifications</legend>
+                {{range .Config.Subs}}
+                    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="sub-{{.}}">
+                        <input type="checkbox" name="sub-{{.}}" class="mdl-switch__input" checked>
+                        <span class="mdl-switch__label">{{.}}</span>
+                    </label>                            
+                    </br>
+                {{end}}
+            </fieldset>
+        {{end}}
+
+        <input type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effec" value="Update">
+        <a style='color:black;margin-left: 30px;' href='' onclick='fetch("/notifications?notificationID={{.ID}}", {method: "delete",credentials: "same-origin"}).then(function (response) {window.location.href = "/notifications";});return false;'>Delete</a>    
+    </form>
+{{end}}

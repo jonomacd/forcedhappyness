@@ -5,13 +5,13 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gernest/mention"
 	"github.com/gorilla/sessions"
 	"github.com/jonomacd/forcedhappyness/site/dao"
 	"github.com/jonomacd/forcedhappyness/site/domain"
+	"github.com/jonomacd/forcedhappyness/site/events"
 	"github.com/jonomacd/forcedhappyness/site/sentiment"
 	"github.com/jonomacd/forcedhappyness/site/tmpl"
 )
@@ -96,6 +96,16 @@ func (h *SubmitHandler) post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !allowed {
+
+		if _, err := dao.CreateRottenPost(ctx, dao.RottenPost{
+			RottenPost: domain.RottenPost{
+				Date:   time.Now(),
+				Text:   text,
+				UserID: userID,
+			},
+		}); err != nil {
+			log.Printf("Unable to save rotten post: %v", err)
+		}
 		err := tmpl.GetTemplate("angryban").Execute(w, &angryban{
 			Message: message,
 			BasePage: &domain.BasePage{
@@ -143,35 +153,36 @@ func (h *SubmitHandler) post(w http.ResponseWriter, r *http.Request) {
 		mentionsUsername = append(mentionsUsername, mention)
 
 	}
-
-	searchtags := make([]string, 0, len(postSentiment.Entities))
-	for _, ent := range postSentiment.Entities {
-		if !strings.HasPrefix(ent.Name, "#") && !strings.HasPrefix(ent.Name, "@") {
-			searchtags = append(searchtags, strings.ToLower(ent.Name))
-			log.Printf("tag %v", ent.Name)
+	post := domain.Post{
+		Date:             time.Now(),
+		Text:             template.HTML(text),
+		UserID:           userID,
+		Sub:              sub,
+		IsReply:          isReply,
+		Parent:           parent,
+		TopParent:        topParent,
+		Analysis:         postSentiment,
+		Mentions:         mentionsID,
+		MentionsUsername: mentionsUsername,
+		Hashtags:         parseHashtags(text),
+	}
+	imageURL := r.Form.Get("image-url")
+	if imageURL != "" {
+		post.LinkDetails = []domain.LinkDetails{
+			domain.LinkDetails{Url: imageURL},
 		}
 	}
 
 	id, err := dao.CreatePost(ctx, dao.Post{
-		Post: domain.Post{
-			Date:             time.Now(),
-			Text:             template.HTML(text),
-			UserID:           userID,
-			Sub:              sub,
-			IsReply:          isReply,
-			Parent:           parent,
-			TopParent:        topParent,
-			Analysis:         postSentiment,
-			Mentions:         mentionsID,
-			MentionsUsername: mentionsUsername,
-			Hashtags:         parseHashtags(text),
-			Searchtags:       searchtags,
-		},
+		Post: post,
 	})
 	if err != nil {
 		log.Printf("Error writing post: %v", err)
 		return
 	}
+	post.ID = id
+	events.EventSubmitPost(post)
+
 	if isReply {
 		url += id
 	}
