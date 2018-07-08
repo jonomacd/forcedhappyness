@@ -30,8 +30,10 @@ for (var i = 0; i < dropZones.length; i++) {
     });
 
     dropZone.addEventListener("paste", async function (e) {
-        e.preventDefault();        
-        uploadImage(e, await getFilesAsync(e.clipboardData));        
+        if (!e.clipboardData.getData("text")) {
+            e.preventDefault();        
+            uploadImage(e, await getFilesAsync(e.clipboardData));        
+        }
     });
 }
 
@@ -50,6 +52,12 @@ async function getFilesAsync(dataTransfer) {
     }
 
     return files;
+}
+
+function picChange(e) {
+    var fileInput = e.target.files;
+    uploadImage(e, fileInput);
+    return false;
 }
 
 function uploadImage(e, files) {

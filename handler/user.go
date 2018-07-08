@@ -106,7 +106,7 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 			hasLiked = err == nil
 		}
 
-		post.Post.Text = augmentWithLinks(post.Post.Text)
+		post.Post.Text, post.Post.Embed = augmentWithLinks(post.Post.Text)
 		post.Post.Text = linkMentionsAndHashtags(post.Post.Text, post.Post.MentionsUsername, post.Post.Hashtags)
 
 		pg.Posts = append(pg.Posts, domain.PostWithUser{

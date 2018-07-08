@@ -33,6 +33,7 @@ type Post struct {
 	Hashtags         []string
 
 	LinkDetails []LinkDetails `datastore:",noindex"`
+	Embed       template.HTML `datastore:"-"`
 
 	// DEPRECATED
 	Searchtags []string

@@ -20,10 +20,10 @@ func CheckPost(ctx context.Context, user domain.User, sentiment *languagepb.Anno
 			ps := tox.SummaryScore.Value
 
 			if ps < 0.05 {
-				score = score + 0.1
+				score = score + 0.3
 			}
 			if ps < 0.1 {
-				score = score + 0.1
+				score = score + 0.2
 			}
 			if ps < 0.2 {
 				score = score + 0.1
@@ -48,6 +48,9 @@ func CheckPost(ctx context.Context, user domain.User, sentiment *languagepb.Anno
 			}
 			if score < -1 {
 				score = -1
+			}
+			if score > 1 {
+				score = 1
 			}
 		}
 	}

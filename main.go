@@ -8,6 +8,7 @@ import (
 
 	"github.com/jonomacd/forcedhappyness/site/certificate"
 	"github.com/jonomacd/forcedhappyness/site/dao"
+	"github.com/jonomacd/forcedhappyness/site/embedder"
 	"github.com/jonomacd/forcedhappyness/site/handler"
 	"github.com/jonomacd/forcedhappyness/site/images"
 	"github.com/jonomacd/forcedhappyness/site/push"
@@ -46,6 +47,14 @@ func main() {
 
 	if err := dao.Init(bb); err != nil {
 		log.Printf("error init dao: %v", err)
+	}
+
+	provs, err := statik.StatikFS.Open("/embeds/providers.json")
+	if err != nil {
+		panic(err)
+	}
+	if err := embedder.Init(provs); err != nil {
+		log.Printf("error init embedder: %v", err)
 	}
 
 	sentiment.InitNLP()

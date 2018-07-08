@@ -15,6 +15,11 @@
             <div class="mdl-color-text--grey-600 post-text">
                 <p class="quote">{{.Post.Text}}</p>                               
             </div>
+            {{if .Post.Embed}}
+            <div class='embedded-content'>
+                {{.Post.Embed}}
+            </div>
+            {{end}}
             {{range .Post.ImageLinkDetails}}                
                 <div class='div-post-image'>
                     <img class='post-image' src="{{.Url}}">

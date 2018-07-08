@@ -8,9 +8,12 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/dyatlov/go-oembed/oembed"
+
 	"github.com/gorilla/sessions"
 	"github.com/jonomacd/forcedhappyness/site/dao"
 	"github.com/jonomacd/forcedhappyness/site/domain"
+	"github.com/jonomacd/forcedhappyness/site/embedder"
 	"github.com/jonomacd/forcedhappyness/site/tmpl"
 	"mvdan.cc/xurls"
 )
@@ -72,7 +75,7 @@ func renderHome(w http.ResponseWriter, r *http.Request, ss sessions.Store, sub s
 			return
 		}
 
-		subData.Description = augmentWithLinks(subData.Description)
+		subData.Description, _ = augmentWithLinks(subData.Description)
 
 	} else {
 		u, err := dao.ReadUserByID(ctx, userID)
@@ -179,7 +182,7 @@ func augmentPosts(ctx context.Context, userID string, posts []dao.Post) ([]domai
 			_, err := dao.ReadLike(ctx, userID, posts[ii].ID)
 			hasLiked = err == nil
 		}
-		posts[ii].Post.Text = augmentWithLinks(posts[ii].Post.Text)
+		posts[ii].Post.Text, posts[ii].Post.Embed = augmentWithLinks(posts[ii].Post.Text)
 		posts[ii].Post.Text = linkMentionsAndHashtags(posts[ii].Post.Text, posts[ii].Post.MentionsUsername, posts[ii].Post.Hashtags)
 		pwu[ii] = domain.PostWithUser{
 			Post:     posts[ii].Post,
@@ -191,13 +194,33 @@ func augmentPosts(ctx context.Context, userID string, posts []dao.Post) ([]domai
 	return pwu, nil
 }
 
-func augmentWithLinks(text template.HTML) template.HTML {
+func augmentWithLinks(text template.HTML) (template.HTML, template.HTML) {
 
-	return template.HTML(urlMatcher.ReplaceAllStringFunc(string(text), func(in string) string {
+	embed := ""
+
+	linktext := template.HTML(urlMatcher.ReplaceAllStringFunc(string(text), func(in string) string {
+
+		if embed == "" {
+			toEmbed := embedder.Oembed.FindItem(in)
+
+			if toEmbed != nil {
+				i, err := toEmbed.FetchOembed(oembed.Options{
+					URL: in,
+				})
+				if err != nil {
+					log.Printf("embed error: %v\n", err)
+				} else {
+					embed = i.HTML
+				}
+			}
+		}
+
 		linkPrefix := ""
 		if !strings.HasPrefix(in, "http") {
 			linkPrefix = "//"
 		}
 		return "<a target='_blank' href='" + linkPrefix + in + "'>" + in + "</a>"
 	}))
+
+	return linktext, template.HTML(embed)
 }
