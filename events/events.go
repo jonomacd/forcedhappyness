@@ -19,7 +19,10 @@ func EventSubmitPost(post domain.Post) {
 		}
 
 		linkDetails, block, err := sentiment.CheckLinks(post, postUser.User)
-		if block {
+		if err != nil {
+			log.Printf("Unable to do sentiment on image %v. Letting through: %v", post.Text, err)
+		}
+		if block && err == nil {
 			if err := dao.BlockExistingPost(context.Background(), dao.Post{Post: post}); err != nil {
 				log.Printf("Error blockingpost %s: %v", post.ID, err)
 			}

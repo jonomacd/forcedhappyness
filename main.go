@@ -94,6 +94,7 @@ func registerHandlers(domain, publicPushKey string) {
 	http.Handle("/shame/", handler.NewRottenPostsHandler(sessionStore))
 	http.Handle("/notifications", handler.NewNotificationHandler(sessionStore, publicPushKey))
 	http.Handle("/upload", handler.NewUploadHandler(sessionStore))
+	http.Handle("/moderation/", handler.NewDeletePostHandler(sessionStore))
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(statik.StatikFS)))
 

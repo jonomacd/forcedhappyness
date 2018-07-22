@@ -71,6 +71,7 @@ function uploadImage(e, files) {
         imgelm.style.display = 'block';
         fetch('/upload', {
             method: 'POST',
+            credentials: 'same-origin',
             body: data
         }).then(function (response) {
             if (response.status == 200) {

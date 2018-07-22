@@ -21,6 +21,7 @@ func NewUploadHandler(ss sessions.Store) *UploadHandler {
 }
 
 func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
 	ff, ffh, err := r.FormFile("file")
 	if err != nil {
 		log.Printf("Error uploading file: %v", err)

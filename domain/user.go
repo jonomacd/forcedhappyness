@@ -96,4 +96,6 @@ type UserPage struct {
 	Follows bool
 	Sub     string
 	ReplyTo string
+	// TODO: This is only here to compile the template. Super hack-y. Fix this
+	ID string
 }

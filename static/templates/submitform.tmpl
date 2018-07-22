@@ -9,9 +9,10 @@
         
         <img class='uploaded-image post-image' style='display: none;' src=''></img>        
         <div class="submit-post-button">        
-            <div>                
-                <input style='display:none;' type="file" name='upload-photo' id='upload-photo' accept="image/*" onchange="picChange(event)"/>
-                <label for="upload-photo" style='cursor: pointer;color: black;' class='material-icons'>add_photo_alternate</label>
+            <div>      
+                         
+                <input style='display:none;' type="file" name='upload-photo' id='upload-photo{{if .ID}}-{{.ID}}{{end}}' accept="image/*" onchange="picChange(event)"/>
+                <label for="upload-photo{{if .ID}}-{{.ID}}{{end}}" style='cursor: pointer;color: black;' class='material-icons'>add_photo_alternate</label>
             </div>
             <div class="spb-button">
                 <input type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effec" value="Submit">

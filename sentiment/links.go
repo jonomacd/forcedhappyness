@@ -37,7 +37,7 @@ func CheckLinks(post domain.Post, user domain.User) ([]domain.LinkDetails, bool,
 		}
 
 		fileType := http.DetectContentType(unknown)
-		log.Printf("Found URL %s with content type %s", url, fileType)
+		log.Printf("Found URL %s with content type %s\n", url, fileType)
 		linkDetails[ii] = domain.LinkDetails{
 			MIME: fileType,
 			Url:  url,
@@ -50,6 +50,7 @@ func CheckLinks(post domain.Post, user domain.User) ([]domain.LinkDetails, bool,
 			}
 			block := shouldBlock(ai.SafeSearchAnnotation)
 			if block {
+				log.Printf("Safe search block %#v\n", ai.SafeSearchAnnotation)
 				return nil, true, nil
 			}
 
@@ -80,7 +81,8 @@ func CheckLinks(post domain.Post, user domain.User) ([]domain.LinkDetails, bool,
 					return nil, false, err
 				}
 
-				if block {
+				if !block {
+					log.Printf("Sentiment block\n")
 					return nil, true, nil
 				}
 			}

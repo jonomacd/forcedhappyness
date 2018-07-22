@@ -98,6 +98,13 @@ var (
 				templateDir + "rottenposts" + ext,
 			},
 		},
+		"moderate": &TemplateInfo{
+			Name: "moderate",
+			filepaths: []string{
+				templateDir + "post" + ext,
+				templateDir + "moderation" + ext,
+			},
+		},
 	}
 )
 

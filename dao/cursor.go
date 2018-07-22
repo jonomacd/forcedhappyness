@@ -13,8 +13,8 @@ const (
 )
 
 type Cursor struct {
-	Cursors []byte
-	Date    time.Time
+	Cursors []byte    `datastore:",noindex"`
+	Date    time.Time `datastore:",noindex"`
 
 	K *datastore.Key `datastore:"__key__"`
 }

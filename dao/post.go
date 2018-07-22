@@ -355,6 +355,33 @@ func BlockExistingPost(ctx context.Context, post Post) error {
 	return err
 }
 
+func SoftDeletePost(ctx context.Context, postID, deleteMessage string) error {
+
+	tx, err := ds.NewTransaction(ctx)
+	if err != nil {
+		return err
+	}
+
+	key := datastore.NameKey(KindPost, postID, nil)
+
+	p := &Post{}
+	if err := tx.Get(key, p); err != nil {
+		tx.Rollback()
+		return err
+	}
+	p.Post.Deleted = true
+	p.Post.DeletedMessage = deleteMessage
+	if _, err := tx.Put(key, p); err != nil {
+		tx.Rollback()
+		return err
+	}
+	if _, err = tx.Commit(); err != nil {
+		return err
+	}
+	return nil
+
+}
+
 func UpdatePostLinkDetails(ctx context.Context, post Post) error {
 	tx, err := ds.NewTransaction(ctx)
 	if err != nil {

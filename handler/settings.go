@@ -45,6 +45,7 @@ func (h *SettingsHandler) post(w http.ResponseWriter, r *http.Request) {
 	email := r.Form.Get("email")
 	password := r.Form.Get("password")
 	confirmpassword := r.Form.Get("confirmpassword")
+	avatar := r.Form.Get("avatar-url")
 
 	u := domain.User{
 		ID:       userID,
@@ -52,6 +53,7 @@ func (h *SettingsHandler) post(w http.ResponseWriter, r *http.Request) {
 		Name:     name,
 		Username: username,
 		Details:  details,
+		Avatar:   avatar,
 	}
 
 	if password != confirmpassword {

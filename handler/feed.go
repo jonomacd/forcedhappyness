@@ -171,7 +171,11 @@ func ReadUserMentionAndFollowPosts(ctx context.Context, u dao.User, cursor strin
 
 func augmentPosts(ctx context.Context, userID string, posts []dao.Post) ([]domain.PostWithUser, error) {
 	pwu := make([]domain.PostWithUser, len(posts))
-	for ii, _ := range posts {
+	u, err := dao.ReadUserByID(ctx, userID)
+	if err != nil {
+		log.Printf("cannot read user %s: %v", userID, err)
+	}
+	for ii, post := range posts {
 		user, err := dao.ReadUserByID(ctx, posts[ii].UserID)
 		if err != nil {
 			return nil, err
@@ -182,12 +186,20 @@ func augmentPosts(ctx context.Context, userID string, posts []dao.Post) ([]domai
 			_, err := dao.ReadLike(ctx, userID, posts[ii].ID)
 			hasLiked = err == nil
 		}
+
+		canModerate := false
+		if u.ID != "" {
+			err = validatePostModeration(ctx, u.User, post.Post)
+			canModerate = err == nil
+		}
+
 		posts[ii].Post.Text, posts[ii].Post.Embed = augmentWithLinks(posts[ii].Post.Text)
 		posts[ii].Post.Text = linkMentionsAndHashtags(posts[ii].Post.Text, posts[ii].Post.MentionsUsername, posts[ii].Post.Hashtags)
 		pwu[ii] = domain.PostWithUser{
-			Post:     posts[ii].Post,
-			User:     user.User,
-			HasLiked: hasLiked,
+			Post:        posts[ii].Post,
+			User:        user.User,
+			HasLiked:    hasLiked,
+			CanModerate: canModerate,
 		}
 	}
 
@@ -204,7 +216,14 @@ func augmentWithLinks(text template.HTML) (template.HTML, template.HTML) {
 			toEmbed := embedder.Oembed.FindItem(in)
 
 			if toEmbed != nil {
+				if toEmbed.ProviderName == "Twitter" {
+					if !strings.Contains(toEmbed.EndpointURL, "omit_script") {
+						toEmbed.EndpointURL = toEmbed.EndpointURL[:len(toEmbed.EndpointURL)-5] + "&hide_thread=true&dnt=true&omit_script=true&url="
+						log.Printf("Endpoint URL: %s", toEmbed.EndpointURL)
+					}
+				}
 				i, err := toEmbed.FetchOembed(oembed.Options{
+
 					URL: in,
 				})
 				if err != nil {

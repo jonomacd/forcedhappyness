@@ -61,10 +61,17 @@ func GetNLP(ctx context.Context, text string) (*languagepb.AnnotateTextResponse,
 		EncodingType: languagepb.EncodingType_UTF8,
 	})
 	perspect := <-perChan
+	log.Printf("Done NLP for %s", text)
 	log.Printf("NLP time %s", time.Since(now))
 	if err != nil {
 		log.Fatalf("Failed to analyze text: %v", err)
 		return nil, nil, err
+	}
+	if perspect != nil {
+		log.Printf("Perspective API: %v", perspect.AttributeScores["TOXICITY"].SummaryScore.Value)
+	}
+	if sentiment != nil {
+		log.Printf("Sentiment API: %v", sentiment.DocumentSentiment.Score)
 	}
 
 	return sentiment, perspect, nil

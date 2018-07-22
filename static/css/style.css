@@ -614,6 +614,32 @@ textarea:focus {
   display: flex;
 }
 
+.moderate-form {  
+  width: 100%;  
+}
+
+.moderation-text {
+  height: 8em;
+}
+
+.delete-icon {
+  position: absolute;
+  font-size:18;
+  right: -12px;
+  text-decoration: none;
+  color:black;
+}
+
+.registration-upload {
+  display: flex;
+  align-items: center;  
+}
+
+.settings-upload {
+  display: flex;
+  align-items: center;  
+}
+
 .user-card {
   display: flex;
   border-bottom-style: solid;
@@ -802,11 +828,17 @@ textarea:focus {
 .post-contents {
   margin-left: 5px;
   width: calc(100% - 44px);
+  position: relative;
 }
 
 .post-user {
   text-decoration: none;
   color: gray;
+}
+
+.post-user > a {
+  margin-right: 2px;
+  margin-left: 2px;
 }
 
 .post-user > * {

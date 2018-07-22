@@ -99,6 +99,10 @@ func UpdateUser(ctx context.Context, u *User) (*User, error) {
 		current.Details = u.Details
 	}
 
+	if u.Avatar != "" && u.Avatar != current.Avatar {
+		current.Avatar = u.Avatar
+	}
+
 	if _, err := tx.Put(key, current); err != nil {
 		tx.Rollback()
 		return nil, err

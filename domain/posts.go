@@ -31,6 +31,10 @@ type Post struct {
 	Mentions         []string
 	MentionsUsername []string
 	Hashtags         []string
+	Deleted          bool
+	DeletedMessage   string `datastore:",noindex"`
+	DeletedBy        string
+	DeletedAt        time.Time
 
 	LinkDetails []LinkDetails `datastore:",noindex"`
 	Embed       template.HTML `datastore:"-"`
@@ -76,10 +80,11 @@ func (p Post) ImageLinkDetails() []LinkDetails {
 }
 
 type PostWithUser struct {
-	Post      Post
-	User      User
-	HasLiked  bool
-	Highlight bool
+	Post        Post
+	User        User
+	HasLiked    bool
+	Highlight   bool
+	CanModerate bool
 }
 
 type PostWithComments struct {
@@ -139,6 +144,8 @@ type PageData struct {
 	ReplyTo string
 	Sub     string
 	SubData Sub
+	// TODO: This is only here to compile the template. Super hack-y. Fix this
+	ID string
 }
 
 type CommentData struct {
@@ -149,6 +156,12 @@ type CommentData struct {
 type RottenPostPageData struct {
 	*BasePage
 	RottenPosts []RottenPostWithUser
+}
+
+type ModerationPage struct {
+	*BasePage
+	PostWithUser
+	Redirect string
 }
 
 type RottenPostWithUser struct {

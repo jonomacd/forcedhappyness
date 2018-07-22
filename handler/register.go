@@ -50,6 +50,7 @@ func (h *RegisterHandler) post(w http.ResponseWriter, r *http.Request) {
 	email := r.Form.Get("email")
 	password := r.Form.Get("password")
 	confirmpassword := r.Form.Get("confirmpassword")
+	avatar := r.Form.Get("avatar-url")
 
 	u := domain.User{
 		Email:        email,
@@ -57,6 +58,7 @@ func (h *RegisterHandler) post(w http.ResponseWriter, r *http.Request) {
 		Username:     username,
 		Details:      details,
 		RegisterDate: time.Now(),
+		Avatar:       avatar,
 	}
 
 	if password != confirmpassword {

@@ -4,48 +4,64 @@
             <a href='/user/{{.User.Username}}'><img class='profile-image' src="{{.User.AvatarUrl}}" height="44" width="44" onerror="this.src='/static/img/unknown-user.png'"/></a>
         </div>
         <div class='post-contents'>
+            {{if .CanModerate}}
+            {{if not .Post.Deleted}}
+                <a href="/moderation/{{.Post.ID}}" class="material-icons delete-icon">clear</a>
+            {{end}}
+            {{end}}
             <div class='post-user'>
                 <a href='/user/{{.User.Username}}'><strong>{{.User.Name}}</strong></a>
                 <a href='/user/{{.User.Username}}'>@{{.User.Username}}</a>
                 {{if .Post.Sub}} on <a href="/n/{{.Post.Sub}}/">{{.Post.Sub}}</a>{{end}}
                 - <a href='/post/{{.Post.ID}}#{{.Post.ID}}'>{{.Post.FormattedDate}}</a>
-                
             </div>   
+            
             <a class='anchor' name="{{.Post.ID}}"></a>
             <div class="mdl-color-text--grey-600 post-text">
-                <p class="quote">{{.Post.Text}}</p>                               
+                {{if .Post.Deleted}}
+                    <p class="quote">[deleted]</p>
+                    {{if .Post.DeletedMessage}}
+                    </br>
+                    <p class="quote">Moderator Comment:</br>{{.Post.DeletedMessage}}</p>
+                    {{end}}
+                {{else}}
+                    <p class="quote">{{.Post.Text}}</p>
+                {{end}}
             </div>
-            {{if .Post.Embed}}
-            <div class='embedded-content'>
-                {{.Post.Embed}}
-            </div>
-            {{end}}
-            {{range .Post.ImageLinkDetails}}                
-                <div class='div-post-image'>
-                    <img class='post-image' src="{{.Url}}">
-                </div>                
-            {{end}}
-            <div class="{{if .Post.AngryPercent}}angrytext{{else}}happytext{{end}}">
-                <div class="action-happyness">
-                    {{block "happyness" .Post}}{{end}}
-                    <div class="post-actions">                        
+            {{if not .Post.DeletedMessage}}
+                {{if .Post.Embed}}
+                <div class='embedded-content'>
+                    {{.Post.Embed}}
+                </div>
+                {{end}}
+                {{range .Post.ImageLinkDetails}}                
+                    <div class='div-post-image'>
+                        <img class='post-image' src="{{.Url}}">
+                    </div>                
+                {{end}}
+            
 
-                        <div class="post-action">
-                            <a id='reply-{{.Post.ID}}' href='/post/{{.Post.ID}}#{{.Post.ID}}' style='text-decoration: none;' class="material-icons">message</a>
-                            <a  href="/post/{{.Post.ID}}#{{.Post.ID}}"><span id='replybadge-{{.Post.ID}}'>{{.Post.ReplyCount}}</span></a>
-                        </div>
+                <div class="{{if .Post.AngryPercent}}angrytext{{else}}happytext{{end}}">
+                    <div class="action-happyness">
+                        {{block "happyness" .Post}}{{end}}
+                        <div class="post-actions">                        
 
-                        <div class="post-action">
-                            <a  href="" id='like-{{.Post.ID}}' onclick="return toggleLike({{.Post.ID}})" style='text-decoration: none;' class="material-icons">{{if .HasLiked}}favorite{{else}}favorite_border{{end}}</a>
-                            <span id='likebadge-{{.Post.ID}}' class="">{{.Post.Likes}}</span>
-                        </div>
+                            <div class="post-action">
+                                <a id='reply-{{.Post.ID}}' href='/post/{{.Post.ID}}#{{.Post.ID}}' style='text-decoration: none;' class="material-icons">message</a>
+                                <a  href="/post/{{.Post.ID}}#{{.Post.ID}}"><span id='replybadge-{{.Post.ID}}'>{{.Post.ReplyCount}}</span></a>
+                            </div>
 
-                        <div class="post-action"><a href="" onclick="return toggleDisplay({{.Post.ID}})" style='text-decoration: none;' class="material-icons">reply</a></div>
-                        <!--div class="post-action"><a href="" onclick="return false;" style='text-decoration: none;' class="material-icons">report</a></div-->
+                            <div class="post-action">
+                                <a  href="" id='like-{{.Post.ID}}' onclick="return toggleLike({{.Post.ID}})" style='text-decoration: none;' class="material-icons">{{if .HasLiked}}favorite{{else}}favorite_border{{end}}</a>
+                                <span id='likebadge-{{.Post.ID}}' class="">{{.Post.Likes}}</span>
+                            </div>
+
+                            <div class="post-action"><a href="" onclick="return toggleDisplay({{.Post.ID}})" style='text-decoration: none;' class="material-icons">reply</a></div>
+                            <!--div class="post-action"><a href="/moderation/{{.Post.ID}}" style='text-decoration: none;' class="material-icons">report</a></div-->
+                        </div>                
                     </div>                
                 </div>
-                
-            </div>
+            {{end}}
         </div>
     </div>  
     <div id="{{.Post.ID}}-reply" class="mdl-card mdl-cell mdl-cell--12-col post-reply">                 

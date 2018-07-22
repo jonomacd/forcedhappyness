@@ -1,0 +1,22 @@
+{{define "body"}}
+    <div class="fh-feed mdl-layout mdl-js-layout has-drawer is-upgraded">
+        <main class="mdl-layout__content">
+            <div class="fh-feed__posts mdl-grid">
+                <div class="mdl-card mdl-cell mdl-cell--12-col">
+                    <div class="mdl-card--border">
+                        <h3>Would you like the delete this post?</h3>
+                        {{block "post" .}}{{end}}
+                        <div class="moderate-form">
+                            <form action="/moderation/?redirect={{.Redirect}}" method='post'>                            
+                                <input type="hidden" name="post-id" value="{{.Post.ID}}">
+                                <textarea maxlength="400" class="mdl-textfield__input moderation-text" type="text" placeholder="A quick not to say why you are deleting this post (optional)" name="message"></textarea>
+                                <input type="submit" style='margin: 10px;' class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effec" value="Delete Post">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div> 
+    {{block "postScript" .}}{{end}}   
+{{end}}

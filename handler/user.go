@@ -109,10 +109,13 @@ func renderUser(w http.ResponseWriter, r *http.Request, ss sessions.Store) {
 		post.Post.Text, post.Post.Embed = augmentWithLinks(post.Post.Text)
 		post.Post.Text = linkMentionsAndHashtags(post.Post.Text, post.Post.MentionsUsername, post.Post.Hashtags)
 
+		canModerate := userID == u.ID
+
 		pg.Posts = append(pg.Posts, domain.PostWithUser{
-			Post:     post.Post,
-			User:     u.User,
-			HasLiked: hasLiked,
+			Post:        post.Post,
+			User:        u.User,
+			HasLiked:    hasLiked,
+			CanModerate: canModerate,
 		})
 	}
 

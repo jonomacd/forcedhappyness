@@ -16,6 +16,12 @@
                                 <label class="mdl-textfield__label" for="name">Username</label>
                             </div>
                             </br>
+                            <div class='settings-upload'>
+                                    <input style='display:none;' type="file" name='upload-photo' id='upload-photo-settings' accept="image/*" onchange="picChange(event)"/>
+                                    Update profile photo: <label for="upload-photo-settings" style='cursor: pointer;color: black;padding-left: 10px;' class='material-icons'>add_photo_alternate</label>
+                            </div>
+
+                            <img class='uploaded-image post-image' style='display: none;' src=''></img>
                             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                                 <input class="mdl-textfield__input" type="text" id="email" name="email" value="{{.SessionUser.Email}}">
                                 <label class="mdl-textfield__label" for="email">Email</label>
@@ -34,7 +40,8 @@
                             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                                 <input class="mdl-textfield__input" type="password" id="confirmpassword" name="confirmpassword">
                                 <label class="mdl-textfield__label" for="confirmpassword">Confirm Password</label>
-                            </div>                            
+                            </div>      
+                            <input type="hidden" name="avatar-url" class="image-url">                      
                             </br>
                             <a style='color: black;' href='/notifications'>Notification Settings</a>
                             </br>
