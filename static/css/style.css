@@ -547,6 +547,13 @@ body .fh-feed {
 
 .message-input {
   width:400px;
+  -webkit-user-select: text;
+  -khtml-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  resize: none;
+  outline: none;
 }
 
 .anchor{
@@ -574,6 +581,7 @@ textarea:focus {
 
 .submit-form {
   margin: 8px;
+  outline: none;
 }
 
 .embedded-content {

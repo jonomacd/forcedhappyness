@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/jonomacd/forcedhappyness/site/certificate"
 	"github.com/jonomacd/forcedhappyness/site/dao"
@@ -99,16 +100,39 @@ func registerHandlers(domain, publicPushKey string) {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(statik.StatikFS)))
 
 	// Service worker MUST be at root of domain
-	f, err := statik.StatikFS.Open("/js/service-worker.js")
+	serveRoot("/js/service-worker.js", "application/javascript")
+	for _, favicon := range faviconRoot {
+		serveRoot("/img/favicon/"+favicon, "")
+	}
+
+}
+
+var (
+	faviconRoot = []string{"android-icon-144x144.png", "apple-icon-114x114.png", "apple-icon-60x60.png", "favicon-16x16.png", "ms-icon-150x150.png",
+		"android-icon-192x192.png", "apple-icon-120x120.png", "apple-icon-72x72.png", "favicon-32x32.png", "ms-icon-310x310.png",
+		"android-icon-36x36.png", "apple-icon-144x144.png", "apple-icon-76x76.png", "favicon-96x96.png", "ms-icon-70x70.png",
+		"android-icon-48x48.png", "apple-icon-152x152.png", "apple-icon-precomposed.png", "favicon.ico",
+		"android-icon-72x72.png", "apple-icon-180x180.png", "apple-icon.png", "manifest.json",
+		"android-icon-96x96.png", "apple-icon-57x57.png", "browserconfig.xml", "ms-icon-144x144.png"}
+)
+
+func serveRoot(file, contentType string) {
+	// Service worker MUST be at root of domain
+
+	f, err := statik.StatikFS.Open(file)
 	if err != nil {
 		panic(err)
 	}
-	serviceWorkerBytes, err := ioutil.ReadAll(f)
+	bb, err := ioutil.ReadAll(f)
 	if err != nil {
 		panic(err)
 	}
-	http.HandleFunc("/service-worker.js", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/javascript")
-		w.Write(serviceWorkerBytes)
+	fileA := strings.Split(file, "/")
+
+	http.HandleFunc("/"+fileA[len(fileA)-1], func(w http.ResponseWriter, r *http.Request) {
+		if contentType != "" {
+			w.Header().Set("Content-Type", contentType)
+		}
+		w.Write(bb)
 	})
 }
