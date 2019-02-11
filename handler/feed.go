@@ -8,8 +8,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/dyatlov/go-oembed/oembed"
-
 	"github.com/gorilla/sessions"
 	"github.com/jonomacd/forcedhappyness/site/dao"
 	"github.com/jonomacd/forcedhappyness/site/domain"
@@ -216,16 +214,7 @@ func augmentWithLinks(text template.HTML) (template.HTML, template.HTML) {
 			toEmbed := embedder.Oembed.FindItem(in)
 
 			if toEmbed != nil {
-				if toEmbed.ProviderName == "Twitter" {
-					if !strings.Contains(toEmbed.EndpointURL, "omit_script") {
-						toEmbed.EndpointURL = toEmbed.EndpointURL[:len(toEmbed.EndpointURL)-5] + "&hide_thread=true&dnt=true&omit_script=true&url="
-						log.Printf("Endpoint URL: %s", toEmbed.EndpointURL)
-					}
-				}
-				i, err := toEmbed.FetchOembed(oembed.Options{
-
-					URL: in,
-				})
+				i, err := embedder.AugmentItem(toEmbed, in)
 				if err != nil {
 					log.Printf("embed error: %v\n", err)
 				} else {
